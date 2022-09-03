@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const config = require('../databaseConfig.js');
 const Player = require('../models/playerModel');
+const Timetrial = require('../models/timetrialModel.js');
 
 // Connexion à la database
 const db = config.connection;
@@ -33,8 +34,22 @@ function getPlayer(req, res) {
 }
 
 function getTimetrialFromPlayer(req, res) {
+    const arrayTimetrial = [];
+    const arrayShroom = [];
+    const arrayNoShroom = [];
     db.query("SELECT * FROM timetrial WHERE timetrial.idPlayer = "+req.params.idPlayer, function(err, result) {
-        res.send(result);
+        result.forEach(element => {
+            let timetrial = new Timetrial();
+            timetrial = timetrial.fromJSON(element);
+            if(element.isShroomless == "0") {
+                arrayShroom.push(timetrial)
+            } else {
+                arrayNoShroom.push(timetrial);
+            }
+        });
+        arrayTimetrial.push({"arrayShroom" : arrayShroom});
+        arrayTimetrial.push({"arrayNoShroom" : arrayNoShroom});
+        res.send(arrayTimetrial);
     });
 }
 
