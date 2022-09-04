@@ -4,7 +4,8 @@ config = {
     host: "localhost",
     user: "root",
     password: "",
-    database: "yoshi_family_2"
+    database: "yoshi_family_2",
+    multipleStatements: true
 }
 
 const connection = mysql.createConnection(config);
