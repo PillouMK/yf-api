@@ -6,6 +6,7 @@ const MapsRoute = require("./routes/mapsRoutes");
 const TimetrialRoute = require("./routes/timetrialRoutes");
 const ProjectMapRoute = require("./routes/projectMapRoutes");
 // parse the body (Sinno ça peut faire d'la merde askip)
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // On écoute le port 8080
