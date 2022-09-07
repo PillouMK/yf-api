@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-
+const { getTimetrialByMap } = require('../controller/timetrialController');
 
 // GET /timetrial/:idMap
 router.get('/:idMap', (req, res) => {
-    res.send("GET /timetrial/:idMap");
+    getTimetrialByMap(req, res);
 });
 
 // PUT /timetrial/:idTimetrial

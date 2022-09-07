@@ -1,7 +1,5 @@
-const express = require('express');
-const router = express.Router();
 const config = require('../databaseConfig.js');
-
+const {STATUS_CODE_OK, STATUS_CODE_CREATED, STATUS_CODE_BAD_REQUEST, STATUS_CODE_NOT_FOUND} = require('./variable');
 // Connexion à la database
 const db = config.connection;
 
@@ -9,7 +7,7 @@ const db = config.connection;
 function getAllPlayers(res) {
     db.query("SELECT *, r.rosterName FROM player p join roster r on p.idRoster = r.idRoster", (err, result) => {
         if(err) {
-            res.status(400).send(err);
+            res.status(STATUS_CODE_BAD_REQUEST).send(err);
             return;
         } 
         if(Array.isArray(result) && result.length) {
@@ -37,12 +35,12 @@ function getAllPlayers(res) {
             });
 
             // send the response
-            res.status(200).send({
+            res.status(STATUS_CODE_OK).send({
                 response : result
             });
         } else {
             // send the response
-            res.status(404).send({
+            res.status(STATUS_CODE_NOT_FOUND).send({
                 response : "There is no players"
             });
         }
@@ -52,20 +50,21 @@ function getAllPlayers(res) {
 
 function getPlayer(req, res) {
     db.query("SELECT p.*, r.rosterName FROM player p join roster r on p.idRoster = r.idRoster WHERE p.idPlayer = "+req.params.idPlayer, (err, result) => {
-        if(err) throw err;
+        if(err) {
+            res.status(STATUS_CODE_BAD_REQUEST).send(err);
+            return;
+        }
         // check if player exist
         if(Array.isArray(result) && result.length) {
                 // send the response
-                res.send({
-                    responseCode : 1,
+                res.status(STATUS_CODE_OK).send({
                     response : {
                         player : result[0]
                     }
                 });
         } else {
             // if no data player don't exist
-            res.send({
-                responseCode : 0,
+            res.status(STATUS_CODE_NOT_FOUND).send({
                 response : `${req.params.idPlayer} n'existe pas`
             });
         }
@@ -82,61 +81,58 @@ function getTimetrialFromPlayer(req, res) {
                 SELECT tm.idMap, m.nameMap, tm.time, tm.date FROM timetrial as tm JOIN map as m on m.id=tm.idMap WHERE tm.idPlayer = ${req.params.idPlayer};`, 
                     (err, result) => {
                         if(err) {
-                            res.status(400).send(err);
-                        } else {
-                            // player exist
-                            if(Array.isArray(result[0]) && result[0].length) {
-
-                                // player variable  
-                                const player = result[0][0];
+                            res.status(STATUS_CODE_BAD_REQUEST).send(err);
+                            return;
+                        }
+                        // player exist
+                        if(Array.isArray(result[0]) && result[0].length) {
+                            // player variable  
+                            const player = result[0][0];
                             
 
-                                // player have timetrials
-                                if(Array.isArray(result[1]) && result[1].length) {
-                                    result[1].forEach(element => {
-                                        let timetrial = element;
+                            // player have timetrials
+                            if(Array.isArray(result[1]) && result[1].length) {
+                                result[1].forEach(element => {
+                                    let timetrial = element;
                                         
 
-                                        // Sort timetrials by isShroomless
-                                        if(!timetrial.isShroomless) {
-                                            arrayShroom.push(timetrial)
-                                        } else {
-                                            arrayNoShroom.push(timetrial);
-                                        }
-                                        delete timetrial.isShroomless
-                                    });
-                                    arrayTimetrial.push({"arrayShroom" : arrayShroom.length ? arrayShroom : null});
-                                    arrayTimetrial.push({"arrayShroomless" : arrayNoShroom.length ? arrayNoShroom : null});
-                                    res.status(200).send({
-                                        response : {
-                                            playerInfos : player,
-                                            timetrials : arrayTimetrial
-                                        }
-                                    });
-                                } else {
-                                    res.status(404).send({
-                                        response : `${req.params.idPlayer} ne possède aucun temps`
-                                    });
-                                }
+                                    // Sort timetrials by isShroomless
+                                    if(!timetrial.isShroomless) {
+                                        arrayShroom.push(timetrial)
+                                    } else {
+                                        arrayNoShroom.push(timetrial);
+                                    }
+                                    delete timetrial.isShroomless
+                                });
+                                arrayTimetrial.push({"arrayShroom" : arrayShroom.length ? arrayShroom : null});
+                                arrayTimetrial.push({"arrayShroomless" : arrayNoShroom.length ? arrayNoShroom : null});
+                                res.status(STATUS_CODE_OK).send({
+                                    response : {
+                                        playerInfos : player,
+                                        timetrials : arrayTimetrial
+                                    }
+                                });
                             } else {
-                                res.status(404).send({
-                                    response : `${req.params.idPlayer} n'existe pas`
+                                res.status(STATUS_CODE_NOT_FOUND).send({
+                                    response : `${req.params.idPlayer} ne possède aucun temps`
                                 });
                             }
-                        }
-                            
-                    }); 
+                        } else {
+                            res.status(STATUS_CODE_NOT_FOUND).send({
+                                response : `${req.params.idPlayer} n'existe pas`
+                            });
+                        }   
+    }); 
 }
 
 function postPlayer(req, res) {
     db.query("INSERT INTO player (`idPlayer`, `idRoster`, `name`, `tt_points`, `tt_top1`, `tt_top3`) VALUES "+`('${req.body.idPlayer}','${req.body.idRoster}','${req.body.name}',0,0,0);`, (err, result) => {
         if(err) {
-            res.status(400).send(err);
+            res.status(STATUS_CODE_BAD_REQUEST).send(err);
         } else {
-            res.status(200).send({
+            res.status(STATUS_CODE_CREATED).send({
                 response : "Player créé"
             });
-            console.log(result);
         }
     })
 }
@@ -148,36 +144,34 @@ function putPlayer(req, res) {
     let tt_top1 = "\`tt_top1\`= tt_top1 +";
     let tt_top3 = "\`tt_top3\`= tt_top3 +";
     
-    if(req.body.hasOwnProperty("tt_points")) {
-        tt_points += req.body.tt_points
-    } else {
-        tt_points += "0";
-    }
-
-    if(req.body.hasOwnProperty("tt_top1")) {
-        tt_top1 += req.body.tt_top1
-    } else {
-        tt_top1 += "0";
-    }
-
-    if(req.body.hasOwnProperty("tt_top3")) {
-        tt_top3 += req.body.tt_top3;
-    } else {
-        tt_top3 += "0";
-    }
+    tt_points = setUpdateParam(req, "tt_points", tt_points);
+    tt_top1 = setUpdateParam(req, "tt_top1", tt_top1);
+    tt_top3 = setUpdateParam(req, "tt_top3", tt_top3);
+    
+    // set the , for SQL request
     tt_points += ",";
     tt_top1 += ","; 
     
     
     db.query(`UPDATE player SET ${name} ${idRoster} ${tt_points} ${tt_top1} ${tt_top3} WHERE player.idPlayer = ${req.params.idPlayer}`, (err, result) => {
         if(err) {
-            res.status(400).send(err);
+            res.status(STATUS_CODE_BAD_REQUEST).send(err);
         } else {
-            res.status(200).send({
+            res.status(STATUS_CODE_OK).send({
                 response : "Player modifié"
             });
-            console.log(result);
         }
     })
 }
+
+// set param for update SQL request
+const setUpdateParam = (req, nameParam, param) => {
+    if(req.body.hasOwnProperty(nameParam)) {
+        param += req.body[nameParam];
+    } else {
+        param += "0";
+    }
+    return param;
+}
+
 module.exports = {getAllPlayers, getPlayer, getTimetrialFromPlayer, postPlayer, putPlayer}
