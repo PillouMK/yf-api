@@ -7,7 +7,7 @@ function getTimetrialByMap(req, res) {
     const arrayTimetrial = [];
     const arrayShroom = [];
     const arrayNoShroom = [];
-    
+
     db.query(`SELECT idMap, nameMap, minia, initialGame, DLC, retro FROM map where map.idMap = '${req.params.idMap}'; 
         SELECT tm.idPlayer, p.name, tm.time, tm.isShroomless, tm.date, r.rosterName, r.idRoster
         FROM timetrial tm 

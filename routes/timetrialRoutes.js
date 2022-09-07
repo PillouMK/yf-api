@@ -8,7 +8,7 @@ router.get('/:idMap', (req, res) => {
 });
 
 // PUT /timetrial/:idTimetrial
-router.put('/:idTimetrial', (req, res) => {
+router.put('/:idMap/:idPlayer/:isShroomless', (req, res) => {
     res.send("PUT /timetrial/:idTimetrial");
 });
 

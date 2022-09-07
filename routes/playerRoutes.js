@@ -7,8 +7,8 @@ require('../controller/playerController');
 const db = config.connection;
 
 // GET /player
-router.get('/', function(req, res) {
-    getAllPlayers(res);
+router.get('/', (req, res) => {
+    getAllPlayers(req, res);
 })
 
 // GET /player/:idPlayer

@@ -4,7 +4,7 @@ const {STATUS_CODE_OK, STATUS_CODE_CREATED, STATUS_CODE_BAD_REQUEST, STATUS_CODE
 const db = config.connection;
 
 
-function getAllPlayers(res) {
+function getAllPlayers(req, res) {
     db.query("SELECT *, r.rosterName FROM player p join roster r on p.idRoster = r.idRoster", (err, result) => {
         if(err) {
             res.status(STATUS_CODE_BAD_REQUEST).send(err);
@@ -78,7 +78,7 @@ function getTimetrialFromPlayer(req, res) {
     const arrayShroom = [];
     const arrayNoShroom = [];
     db.query(`SELECT * FROM player where player.idPlayer = ${req.params.idPlayer};
-                SELECT tm.idMap, m.nameMap, tm.time, tm.date FROM timetrial as tm JOIN map as m on m.id=tm.idMap WHERE tm.idPlayer = ${req.params.idPlayer};`, 
+                SELECT tm.idMap, m.nameMap, tm.time, tm.date FROM timetrial as tm JOIN map as m on m.idMap=tm.idMap WHERE tm.idPlayer = ${req.params.idPlayer};`, 
                     (err, result) => {
                         if(err) {
                             res.status(STATUS_CODE_BAD_REQUEST).send(err);

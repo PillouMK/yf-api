@@ -5,7 +5,7 @@ const PlayerRoute = require("./routes/playerRoutes");
 const MapsRoute = require("./routes/mapsRoutes");
 const TimetrialRoute = require("./routes/timetrialRoutes");
 const ProjectMapRoute = require("./routes/projectMapRoutes");
-// parse the body (Sinno ça peut faire d'la merde askip)
+// parse the body (Sinon ça peut faire d'la merde askip)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -17,6 +17,4 @@ app.use('/maps', MapsRoute);
 app.use('/timetrial', TimetrialRoute);
 app.use('/projectmap', ProjectMapRoute);
 
-
-// Mettre en place un fichier qui contiens les routes
 
