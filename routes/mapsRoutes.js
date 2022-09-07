@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const {getAllMaps} = require('../controller/mapController');
 
-
-// GET /timetrial/:idMap
+// GET /maps
 router.get('/', (req, res) => {
-    res.send("GET /maps");
+    getAllMaps(req, res);
 });
 
 module.exports = router;
