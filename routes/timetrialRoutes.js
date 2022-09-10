@@ -1,20 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const { getTimetrialByMap } = require('../controller/timetrialController');
+const { getTimetrialsByMap, postTimetrial, patchTimetrial} = require('../controller/timetrialController');
 
 // GET /timetrial/:idMap
 router.get('/:idMap', (req, res) => {
-    getTimetrialByMap(req, res);
+    getTimetrialsByMap(req, res);
 });
 
 // PUT /timetrial/:idTimetrial
-router.put('/:idMap/:idPlayer/:isShroomless', (req, res) => {
-    res.send("PUT /timetrial/:idTimetrial");
+router.patch('/:idMap/:idPlayer/:isShroomless', (req, res) => {
+    patchTimetrial(req, res);
 });
 
 // POST /timetrial
 router.post('/', (req, res) => {
-    res.send("POST /timetrial");
+    postTimetrial(req, res);
 });
 
 module.exports = router;
