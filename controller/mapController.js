@@ -4,7 +4,8 @@ const {STATUS_CODE_OK, STATUS_CODE_CREATED, STATUS_CODE_BAD_REQUEST, STATUS_CODE
 const db = config.connection;
 
 function getAllMaps(req, res) {
-    db.query("SELECT * FROM map", (err, result) => {
+    const SQL_REQUEST = "SELECT * FROM map";
+    db.query(SQL_REQUEST, (err, result) => {
         if(err) {
             res.status(STATUS_CODE_BAD_REQUEST).send(err);
             return;
@@ -16,8 +17,7 @@ function getAllMaps(req, res) {
         } else {
             res.status(STATUS_CODE_NOT_FOUND).send({ response : "There is no map"});
         }
-
-      });
+    });
 }
 
 module.exports = {getAllMaps}
