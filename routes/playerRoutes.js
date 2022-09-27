@@ -1,10 +1,7 @@
 const express = require('express');
-const { getAllPlayers, getPlayer, getTimetrialFromPlayer, postPlayer, putPlayer } = require('../controller/playerController');
+const { getAllPlayers, getPlayer, getTimetrialFromPlayer, postPlayer, patchPlayer } = require('../controller/playerController');
 const router = express.Router();
-const config = require('../databaseConfig.js');
-require('../controller/playerController');
-// Connexion à la database
-const db = config.connection;
+
 
 // GET /player
 router.get('/', (req, res) => {
@@ -21,9 +18,10 @@ router.get('/:idPlayer/timetrial', (req, res) => {
     getTimetrialFromPlayer(req, res);
 })
 
-// PUT /player/:idPlayer
-router.put('/:idPlayer', (req, res) => {
-    putPlayer(req, res);
+
+// PATCH /player/:idPlayer
+router.patch('/:idPlayer', (req, res) => {
+    patchPlayer(req, res);
 })
 
 // POST /player/

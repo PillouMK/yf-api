@@ -1,16 +1,16 @@
 const express = require('express');
 const router = express.Router();
-
+const {getAllprojectMap, postProjectMap} = require('../controller/projectMapController');
 
 // GET /projectmap/
 router.get('/', (req, res) => {
-    res.send("GET /projectmap/");
+    getAllprojectMap(req, res);
 });
 
 
 // POST /projectmap
 router.post('/', (req, res) => {
-    res.send("POST /projectmap");
+    postProjectMap(req, res);
 });
 
 module.exports = router;
