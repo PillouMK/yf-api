@@ -15,7 +15,11 @@ function getAllMaps(req, res) {
                 response : result 
             });
         } else {
-            res.status(STATUS_CODE_NOT_FOUND).send({ response : "There is no map"});
+            res.status(STATUS_CODE_NOT_FOUND).send({ 
+                response : {
+                    error : "There is no map"
+                }
+            });
         }
     });
 }

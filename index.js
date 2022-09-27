@@ -6,6 +6,7 @@ const MapsRoute = require("./routes/mapsRoutes");
 const TimetrialRoute = require("./routes/timetrialRoutes");
 const ProjectMapRoute = require("./routes/projectMapRoutes");
 const API_VERSION = "v1";
+const {STATUS_CODE_UNAUTHORISED} = require('./controller/variable');
 
 // parse the body (Sinon ça peut faire d'la merde askip)
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -13,6 +14,18 @@ app.use(bodyParser.json());
 
 // On écoute le port 8080
 app.listen(8080, () => {  console.log('Serveur à l\'écoute')       });
+
+app.use((req, res, next) => {
+
+    // API keys 
+    /*
+    if(req.headers["api-key"] === "a") {
+        next();
+    } else {
+        res.status(STATUS_CODE_UNAUTHORISED).json({error: 'unauthorised'})
+    }*/
+    next();
+})
 
 // Ressources
 app.use(`/${API_VERSION}/player`, PlayerRoute);
