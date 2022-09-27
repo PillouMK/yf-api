@@ -113,6 +113,7 @@ function getTimetrialFromPlayer(req, res) {
                     error : `${req.params.idPlayer} ne possède aucun temps`
                 }
             });
+            return;
         }
         // player variable  
         const player = result[0][0];
