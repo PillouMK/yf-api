@@ -6,89 +6,83 @@ const db = config.connection;
 function getAllprojectMap(req, res){
     let SQL_ALL_SELECT="";
     const limit = (req.query.limit != undefined) ? req.query.limit : 10;
-    if(req.query.idRoster != undefined){
-        const idRoster = req.query.idRoster 
-        const SQL_REQUEST_PROJECT_MAP = (idMap, limit,idRoster) =>{ 
-            return `SELECT pm.*,m.nameMap FROM projectmap as pm 
-            JOIN map as m ON pm.idMap=m.idMap 
-            WHERE pm.idMap='${idMap}' AND pm.idRoster='${idRoster}'
-            ORDER BY pm.id DESC 
-            LIMIT ${limit};`;
+    if(req.query.idRoster == undefined){
+        res.status(STATUS_CODE_BAD_REQUEST).send({
+            response : { error : "Paramètre idRoster requis" }
+        });
+        return;
+    }
+    const idRoster = req.query.idRoster 
+    const SQL_REQUEST_PROJECT_MAP = (idMap, limit,idRoster) =>{ 
+        return `SELECT pm.*,m.nameMap FROM projectmap as pm 
+        JOIN map as m ON pm.idMap=m.idMap 
+        WHERE pm.idMap='${idMap}' AND pm.idRoster='${idRoster}'
+        ORDER BY pm.id DESC 
+        LIMIT ${limit};`;
+    };
+    const SQL_REQUEST_MAPS="SELECT idMap FROM map";
+    db.query(SQL_REQUEST_MAPS, (err, result) => {
+        if(err){
+            res.status(STATUS_CODE_BAD_REQUEST).send(err);
+            return;
         }
-        const SQL_REQUEST_MAPS="SELECT idMap FROM map";
-        db.query(SQL_REQUEST_MAPS, (err,result) => {
-            if(err){
-                res.status(STATUS_CODE_BAD_REQUEST).send(err);
+
+        if(!Array.isArray(result) || !result.length){
+            res.status(STATUS_CODE_NOT_FOUND).send({ 
+                response : { error : "No maps in database"}
+            });
+            return;
+        }
+
+        result.forEach(element => {
+            SQL_ALL_SELECT += SQL_REQUEST_PROJECT_MAP(element.idMap,limit,idRoster);
+        });
+        db.query(SQL_ALL_SELECT, (_err, _result) => {
+            if(_err){
+                res.status(STATUS_CODE_BAD_REQUEST).send(_err);
+                return;
             }
-            if(Array.isArray(result) && result.length){
-                result.forEach(element => {
-                    SQL_ALL_SELECT += SQL_REQUEST_PROJECT_MAP(element.idMap,limit,idRoster);
+            if(!Array.isArray(_result) || !_result.length){
+                res.status(STATUS_CODE_NOT_FOUND).send({ 
+                    response : { error : "No projectMap Data" }
                 });
-                db.query(SQL_ALL_SELECT, (_err, _result) => {
-                    if(_err){
-                        res.status(STATUS_CODE_BAD_REQUEST).send(_err);
+                return;
+            }
+            let RESPONSE_ARRAY = [];
+            _result.forEach(_element =>{
+                if(_element.length){
+                    let coef = 0;
+                    let score = 0;
+                    _element.forEach(elt =>{
+                        coef += elt.coef;
+                        score += elt.score * elt.coef;
+                    })
+                    let scoreOfMap = Math.round(score * 10 / coef) / 10; 
+                    let scoreMap = {
+                        idMap : _element[0].idMap,
+                        nameMap : _element[0].nameMap,
+                        score : scoreOfMap,
+                        iteration : _element.length
                     }
-                    if(Array.isArray(_result) && _result.length){
-                        let RESPONSE_ARRAY = [];
-                        _result.forEach(_element =>{
-
-                            if(_element.length){
-                                
-                                console.log("ici",_element.length)
-                                let coef = 0;
-                                let score = 0;
-                                _element.forEach(elt =>{
-                                   coef += elt.coef;
-                                   score += elt.score * elt.coef;
-                                })
-                                let scoreOfMap = Math.round(score * 10 / coef) / 10; 
-                                console.log(scoreOfMap);
-                                let scoreMap = {
-                                    idMap : _element[0].idMap,
-                                    nameMap : _element[0].nameMap,
-                                    score : scoreOfMap
-                                }
-                                RESPONSE_ARRAY.push(scoreMap)
-                                
-                            }
-                        })
-                        if(RESPONSE_ARRAY.length){
-                            RESPONSE_ARRAY.sort((a, b) => {
-                                return b.score - a.score;
-                            })
-                            console.log("laaaaa",RESPONSE_ARRAY);
-                            res.status(STATUS_CODE_OK).send({
-                                response : {
-                                    projectMapArray : RESPONSE_ARRAY
-                                }
-                            })
-                        } else {
-                            res.status(STATUS_CODE_NOT_FOUND).send({ 
-                                response : { error : "No projectMap Data" }
-                            })
-
-                        }
-                        
-                    } else {
-                        res.status(STATUS_CODE_NOT_FOUND).send({ 
-                            response : { error : "No projectMap Data" }
-                        })
-                    }
+                    RESPONSE_ARRAY.push(scoreMap)
                 }
-                )
+            })
+            if(RESPONSE_ARRAY.length){
+                RESPONSE_ARRAY.sort((a, b) => {
+                    return b.score - a.score;
+                })
+                res.status(STATUS_CODE_OK).send({
+                    response : {
+                        projectMapArray : RESPONSE_ARRAY
+                    }
+                });
             } else {
                 res.status(STATUS_CODE_NOT_FOUND).send({ 
-                    response : { error : "No maps"}
+                    response : { error : "No projectMap Data" }
                 });
-            }
-        })
-    } else {
-        res.status(STATUS_CODE_BAD_REQUEST).send({
-             response : { error : "Paramètre idRoster requis" }
-            });
-    }
-    
-
+            }    
+        });
+    });
 }
 
 function postProjectMap (req, res){
@@ -127,6 +121,7 @@ function postProjectMap (req, res){
         }
         if(!Array.isArray(result) || !result.length) {
             res.status(STATUS_CODE_NOT_FOUND).send({ response : "There is no map"});
+            return;
         } 
            
         req.body.scoresMaps.forEach((element, index) =>{
@@ -155,17 +150,18 @@ function postProjectMap (req, res){
                 SQL_INSERT+= ",";
             }
         });
-        console.log(SQL_INSERT);
-    })
-    db.query(SQL_INSERT, (_err, _result) => {
-        if(_err) {
-            res.status(STATUS_CODE_BAD_REQUEST).send(_err);
-            return;
-        }
-        res.status(STATUS_CODE_CREATED).send({
-            response : 'projectMaps bien ajoutés'
+        db.query(SQL_INSERT, (_err, _result) => {
+            if(_err) {
+                console.log(_err);
+                res.status(STATUS_CODE_BAD_REQUEST).send(_err);
+                return;
+            }
+            res.status(STATUS_CODE_CREATED).send({
+                response : 'projectMaps bien ajoutés'
+            })
         })
     })
+    
 }
 
 const calculCoef = (scoreWar) => {

@@ -49,7 +49,9 @@ function getAllPlayers(req, res) {
         } else {
             // send the response
             res.status(STATUS_CODE_NOT_FOUND).send({
-                response : "There is no players"
+                response : {
+                    error : "There is no players"
+                }
             });
         }
     });
@@ -74,7 +76,9 @@ function getPlayer(req, res) {
         } else {
             // if no data player
             res.status(STATUS_CODE_NOT_FOUND).send({
-                response : `${req.params.idPlayer} n'existe pas`
+                response : {
+                    error : `${req.params.idPlayer} n'existe pas`
+                }
             });
         }
         
@@ -94,44 +98,46 @@ function getTimetrialFromPlayer(req, res) {
             return;
         }
         // player exist
-        if(Array.isArray(result[0]) && result[0].length) {
-            // player variable  
-            const player = result[0][0];
-            // player have timetrials
-            if(Array.isArray(result[1]) && result[1].length) {
-                const arrayTimetrial = [];
-                const arrayShroom = [];
-                const arrayNoShroom = [];
-                result[1].forEach(element => {
-                    let timetrial = element;
-                        
-
-                    // Sort timetrials by isShroomless
-                    if(!timetrial.isShroomless) {
-                        arrayShroom.push(timetrial)
-                    } else {
-                        arrayNoShroom.push(timetrial);
-                    }
-                    delete timetrial.isShroomless
-                });
-                arrayTimetrial.push({"arrayShroom" : arrayShroom.length ? arrayShroom : null});
-                arrayTimetrial.push({"arrayShroomless" : arrayNoShroom.length ? arrayNoShroom : null});
-                res.status(STATUS_CODE_OK).send({
-                    response : {
-                        playerInfos : player,
-                        timetrials : arrayTimetrial
-                    }
-                });
-            } else {
-                res.status(STATUS_CODE_NOT_FOUND).send({
-                    response : `${req.params.idPlayer} ne possède aucun temps`
-                });
-            }
-        } else {
+        if(!Array.isArray(result[0]) || !result[0].length) {
             res.status(STATUS_CODE_NOT_FOUND).send({
-                response : `${req.params.idPlayer} n'existe pas`
+                response : {
+                    error : `${req.params.idPlayer} n'existe pas`
+                }
             });
-        }                 
+            return;
+        }
+        // player have timetrials
+        if(!Array.isArray(result[1]) || !result[1].length) {
+            res.status(STATUS_CODE_NOT_FOUND).send({
+                response : {
+                    error : `${req.params.idPlayer} ne possède aucun temps`
+                }
+            });
+        }
+        // player variable  
+        const player = result[0][0];
+        const arrayTimetrial = [];
+        const arrayShroom = [];
+        const arrayNoShroom = [];
+        result[1].forEach(element => {
+            let timetrial = element;
+
+            // Sort timetrials by isShroomless
+            if(!timetrial.isShroomless) {
+                arrayShroom.push(timetrial)
+            } else {
+                arrayNoShroom.push(timetrial);
+            }
+            delete timetrial.isShroomless
+        });
+        arrayTimetrial.push({"arrayShroom" : arrayShroom.length ? arrayShroom : null});
+        arrayTimetrial.push({"arrayShroomless" : arrayNoShroom.length ? arrayNoShroom : null});
+        res.status(STATUS_CODE_OK).send({
+            response : {
+                playerInfos : player,
+                timetrials : arrayTimetrial
+            }
+        });                  
     }); 
 
 }
