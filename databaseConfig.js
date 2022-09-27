@@ -1,10 +1,10 @@
 const mysql = require('mysql');
 
 config = {
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "yoshi_family_2",
+    host: "bdd2.adkynet.com",
+    user: "u2496_zEYPJAoc9H",
+    password: "W3A+Kks!w=@7^NIZn0FhkCQy",
+    database: "s2496_YoshiFamily",
     multipleStatements: true
 }
 
