@@ -1,10 +1,11 @@
 const mysql = require('mysql');
+require('dotenv').config();
 
 config = {
-    host: "bdd2.adkynet.com",
-    user: "u2496_zEYPJAoc9H",
-    password: "W3A+Kks!w=@7^NIZn0FhkCQy",
-    database: "s2496_YoshiFamily",
+    host: `${process.env.database_host}`,
+    user: `${process.env.database_user}`,
+    password: `${process.env.database_password}`,
+    database: `${process.env.database_name}`,
     multipleStatements: true
 }
 

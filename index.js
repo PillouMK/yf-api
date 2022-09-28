@@ -7,6 +7,7 @@ const TimetrialRoute = require("./routes/timetrialRoutes");
 const ProjectMapRoute = require("./routes/projectMapRoutes");
 const API_VERSION = "v1";
 const {STATUS_CODE_UNAUTHORISED} = require('./controller/variable');
+require('dotenv').config();
 
 // parse the body (Sinon ça peut faire d'la merde askip)
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -16,15 +17,13 @@ app.use(bodyParser.json());
 app.listen(8080, () => {  console.log('Serveur à l\'écoute')       });
 
 app.use((req, res, next) => {
-
+    console.log(process.env.api_key);
     // API keys 
-    /*
-    if(req.headers["api-key"] === "a") {
+    if(req.headers["api-key"] === process.env.api_key) {
         next();
     } else {
         res.status(STATUS_CODE_UNAUTHORISED).json({error: 'unauthorised'})
-    }*/
-    next();
+    }
 })
 
 // Ressources
