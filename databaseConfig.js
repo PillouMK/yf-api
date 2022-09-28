@@ -8,17 +8,20 @@ config = {
     multipleStatements: true
 }
 
-const connection = mysql.createConnection(config);
+const connection = mysql.createPool(config);
 
-connection.connect(function(err){
+
+connection.getConnection((err, connexion) => {
   if (err){
     console.log('error connecting:' + err.stack);
   }
   console.log('connected successfully to DB.');
+  connexion.release();
 });
 
+
 module.exports = {
-     connection : mysql.createConnection(config) 
+     connection : mysql.createPool(config) 
 } 
 
 
