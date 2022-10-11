@@ -16,9 +16,9 @@ function getAllMaps(req, res) {
             });
         } else {
             res.status(STATUS_CODE_NOT_FOUND).send({ 
-                response : {
+        
                     error : "There is no map"
-                }
+                
             });
         }
     });

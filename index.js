@@ -17,6 +17,7 @@ app.use(bodyParser.json());
 app.listen(8080, () => {  console.log('Serveur à l\'écoute')       });
 
 app.use((req, res, next) => {
+
     // API keys 
     if(req.headers["api-key"] === process.env.api_key) {
         next();
