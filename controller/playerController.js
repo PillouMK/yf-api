@@ -43,16 +43,12 @@ function getAllPlayers(req, res) {
             });
 
             // send the response
-            res.status(STATUS_CODE_OK).send({
-                response : result
-            });
+            res.status(STATUS_CODE_OK).send(result);
         } else {
             // send the response
             res.status(STATUS_CODE_NOT_FOUND).send({
-               
                     error : "There is no players"
-                
-            });
+                });
         }
     });
 }
@@ -68,21 +64,15 @@ function getPlayer(req, res) {
         // check if player exist
         if(Array.isArray(result) && result.length) {
                 // send the response
-                res.status(STATUS_CODE_OK).send({
-                  
-                        player : result[0]
-                    
+                res.status(STATUS_CODE_OK).send({   
+                        player : result[0]     
                 });
         } else {
             // if no data player
-            res.status(STATUS_CODE_NOT_FOUND).send({
-              
-                    error : `${req.params.idPlayer} n'existe pas`
-                
+            res.status(STATUS_CODE_NOT_FOUND).send({     
+                    error : `${req.params.idPlayer} n'existe pas`       
             });
         }
-        
-        
      });
 }
 
@@ -99,25 +89,21 @@ function getTimetrialFromPlayer(req, res) {
         }
         // player exist
         if(!Array.isArray(result[0]) || !result[0].length) {
-            res.status(STATUS_CODE_NOT_FOUND).send({
-              
-                    error : `${req.params.idPlayer} n'existe pas`
-                
+            res.status(STATUS_CODE_NOT_FOUND).send({     
+                    error : `${req.params.idPlayer} n'existe pas`              
             });
             return;
         }
         // player have timetrials
         if(!Array.isArray(result[1]) || !result[1].length) {
-            res.status(STATUS_CODE_NOT_FOUND).send({
-            
-                    error : `${req.params.idPlayer} ne possède aucun temps`
-                
+            res.status(STATUS_CODE_NOT_FOUND).send({        
+                    error : `${req.params.idPlayer} ne possède aucun temps`             
             });
             return;
         }
         // player variable  
         const player = result[0][0];
-        const arrayTimetrial = [];
+        const arrayTimetrial = {};
         const arrayShroom = [];
         const arrayNoShroom = [];
         result[1].forEach(element => {
@@ -131,14 +117,13 @@ function getTimetrialFromPlayer(req, res) {
             }
             delete timetrial.isShroomless
         });
-        arrayTimetrial.push({"arrayShroom" : arrayShroom.length ? arrayShroom : null});
-        arrayTimetrial.push({"arrayShroomless" : arrayNoShroom.length ? arrayNoShroom : null});
+        arrayTimetrial.arrayShroom = arrayShroom.length ? arrayShroom : null;
+        arrayTimetrial.arrayShroomless = arrayNoShroom.length ? arrayNoShroom : null;
         res.status(STATUS_CODE_OK).send({
-            response : {
                 playerInfos : player,
                 timetrials : arrayTimetrial
             }
-        });                  
+        );                  
     }); 
 
 }
@@ -150,9 +135,7 @@ function postPlayer(req, res) {
         if(err) {
             res.status(STATUS_CODE_BAD_REQUEST).send(err);
         } else {
-            res.status(STATUS_CODE_CREATED).send({
-                response : result
-            });
+            res.status(STATUS_CODE_CREATED).send(result);
         }
     })
 }
@@ -178,9 +161,7 @@ function patchPlayer(req, res) {
         if(err) {
             res.status(STATUS_CODE_BAD_REQUEST).send(err);
         } else {
-            res.status(STATUS_CODE_OK).send({
-                response : result
-            });
+            res.status(STATUS_CODE_OK).send(result);
         }
     })
 }

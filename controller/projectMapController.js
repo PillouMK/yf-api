@@ -72,9 +72,7 @@ function getAllprojectMap(req, res){
                     return b.score - a.score;
                 })
                 res.status(STATUS_CODE_OK).send({
-                   
-                        projectMapArray : RESPONSE_ARRAY
-                    
+                        projectMapArray : RESPONSE_ARRAY                   
                 });
             } else {
                 res.status(STATUS_CODE_NOT_FOUND).send({ 
@@ -120,7 +118,9 @@ function postProjectMap (req, res){
             return;
         }
         if(!Array.isArray(result) || !result.length) {
-            res.status(STATUS_CODE_NOT_FOUND).send({ response : "There is no map"});
+            res.status(STATUS_CODE_NOT_FOUND).send({ 
+                error : "There is no map"
+            });
             return;
         } 
            
@@ -156,9 +156,7 @@ function postProjectMap (req, res){
                 res.status(STATUS_CODE_BAD_REQUEST).send(_err);
                 return;
             }
-            res.status(STATUS_CODE_CREATED).send({
-                response : 'projectMaps bien ajoutés'
-            })
+            res.status(STATUS_CODE_CREATED).send(_result);
         })
     })
     

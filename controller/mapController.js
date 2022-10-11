@@ -11,14 +11,10 @@ function getAllMaps(req, res) {
             return;
         }
         if(Array.isArray(result) && result.length) {
-            res.status(STATUS_CODE_OK).send({
-                response : result 
-            });
+            res.status(STATUS_CODE_OK).send(result);
         } else {
             res.status(STATUS_CODE_NOT_FOUND).send({ 
-        
-                    error : "There is no map"
-                
+                    error : "There is no map"     
             });
         }
     });

@@ -25,24 +25,20 @@ function getTimetrialsByMap(req, res) {
         // Check if idMap is valid
         if(!Array.isArray(result[0]) || !result[0].length) {
             res.status(STATUS_CODE_NOT_FOUND).send({
-              
-                    error : `${req.params.idMap} n'est pas un idMap valide`
-                
+                    error : `${req.params.idMap} n'est pas un idMap valide`                
             });
             return;
         }
         
         // check if data for idMap exists
         if(!Array.isArray(result[1]) && !result[1].length) {
-            res.status(STATUS_CODE_NOT_FOUND).send({
-               
-                    error : `${req.params.idMap} ne possède pas de temps enregistré pour ${filterRoster}`
-                
+            res.status(STATUS_CODE_NOT_FOUND).send({             
+                    error : `${req.params.idMap} ne possède pas de temps enregistré pour ${filterRoster}`               
             });
             return;
         }
         const mapInfos = result[0];
-        const arrayTimetrial = [];
+        const arrayTimetrial = {};
         const arrayShroom = [];
         const arrayNoShroom = [];
         result[1].forEach(element => {
@@ -58,13 +54,11 @@ function getTimetrialsByMap(req, res) {
         });
 
         // add response, null if no data
-        arrayTimetrial.push({"arrayShroom" : arrayShroom.length ? arrayShroom : null});
-        arrayTimetrial.push({"arrayShroomless" : arrayNoShroom.length ? arrayNoShroom : null});
+        arrayTimetrial.arrayShroom = arrayShroom.length ? arrayShroom : null;
+        arrayTimetrial.arrayShroomless = arrayNoShroom.length ? arrayNoShroom : null;
         res.status(STATUS_CODE_OK).send({
-          
                 infoMap : mapInfos,
-                timetrials : arrayTimetrial
-            
+                timetrials : arrayTimetrial        
         });
     });
 }
@@ -141,9 +135,7 @@ function patchTimetrial(req, res) {
         }
         if(!Array.isArray(result[0]) || !result[0].length) {
             res.status(STATUS_CODE_NOT_FOUND).send({
-   
                         error : `'${req.params.idMap}' n'existe pas`
-                    
             });
             return;
         }
