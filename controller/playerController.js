@@ -49,9 +49,9 @@ function getAllPlayers(req, res) {
         } else {
             // send the response
             res.status(STATUS_CODE_NOT_FOUND).send({
-                response : {
+               
                     error : "There is no players"
-                }
+                
             });
         }
     });
@@ -69,16 +69,16 @@ function getPlayer(req, res) {
         if(Array.isArray(result) && result.length) {
                 // send the response
                 res.status(STATUS_CODE_OK).send({
-                    response : {
+                  
                         player : result[0]
-                    }
+                    
                 });
         } else {
             // if no data player
             res.status(STATUS_CODE_NOT_FOUND).send({
-                response : {
+              
                     error : `${req.params.idPlayer} n'existe pas`
-                }
+                
             });
         }
         
@@ -100,18 +100,18 @@ function getTimetrialFromPlayer(req, res) {
         // player exist
         if(!Array.isArray(result[0]) || !result[0].length) {
             res.status(STATUS_CODE_NOT_FOUND).send({
-                response : {
+              
                     error : `${req.params.idPlayer} n'existe pas`
-                }
+                
             });
             return;
         }
         // player have timetrials
         if(!Array.isArray(result[1]) || !result[1].length) {
             res.status(STATUS_CODE_NOT_FOUND).send({
-                response : {
+            
                     error : `${req.params.idPlayer} ne possède aucun temps`
-                }
+                
             });
             return;
         }
