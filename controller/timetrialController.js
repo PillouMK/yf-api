@@ -25,9 +25,9 @@ function getTimetrialsByMap(req, res) {
         // Check if idMap is valid
         if(!Array.isArray(result[0]) || !result[0].length) {
             res.status(STATUS_CODE_NOT_FOUND).send({
-                response : {
+              
                     error : `${req.params.idMap} n'est pas un idMap valide`
-                }
+                
             });
             return;
         }
@@ -35,9 +35,9 @@ function getTimetrialsByMap(req, res) {
         // check if data for idMap exists
         if(!Array.isArray(result[1]) && !result[1].length) {
             res.status(STATUS_CODE_NOT_FOUND).send({
-                response : {
+               
                     error : `${req.params.idMap} ne possède pas de temps enregistré pour ${filterRoster}`
-                }
+                
             });
             return;
         }
@@ -61,10 +61,10 @@ function getTimetrialsByMap(req, res) {
         arrayTimetrial.push({"arrayShroom" : arrayShroom.length ? arrayShroom : null});
         arrayTimetrial.push({"arrayShroomless" : arrayNoShroom.length ? arrayNoShroom : null});
         res.status(STATUS_CODE_OK).send({
-            response : {
+          
                 infoMap : mapInfos,
                 timetrials : arrayTimetrial
-            }
+            
         });
     });
 }
@@ -141,9 +141,9 @@ function patchTimetrial(req, res) {
         }
         if(!Array.isArray(result[0]) || !result[0].length) {
             res.status(STATUS_CODE_NOT_FOUND).send({
-                response : {
+   
                         error : `'${req.params.idMap}' n'existe pas`
-                    }
+                    
             });
             return;
         }

@@ -8,7 +8,7 @@ function getAllprojectMap(req, res){
     const limit = (req.query.limit != undefined) ? req.query.limit : 10;
     if(req.query.idRoster == undefined){
         res.status(STATUS_CODE_BAD_REQUEST).send({
-            response : { error : "Paramètre idRoster requis" }
+            error : "Paramètre idRoster requis" 
         });
         return;
     }
@@ -29,7 +29,7 @@ function getAllprojectMap(req, res){
 
         if(!Array.isArray(result) || !result.length){
             res.status(STATUS_CODE_NOT_FOUND).send({ 
-                response : { error : "No maps in database"}
+                error : "No maps in database"
             });
             return;
         }
@@ -44,7 +44,7 @@ function getAllprojectMap(req, res){
             }
             if(!Array.isArray(_result) || !_result.length){
                 res.status(STATUS_CODE_NOT_FOUND).send({ 
-                    response : { error : "No projectMap Data" }
+                     error : "No projectMap Data" 
                 });
                 return;
             }
@@ -72,13 +72,13 @@ function getAllprojectMap(req, res){
                     return b.score - a.score;
                 })
                 res.status(STATUS_CODE_OK).send({
-                    response : {
+                   
                         projectMapArray : RESPONSE_ARRAY
-                    }
+                    
                 });
             } else {
                 res.status(STATUS_CODE_NOT_FOUND).send({ 
-                    response : { error : "No projectMap Data" }
+                     error : "No projectMap Data" 
                 });
             }    
         });
@@ -90,25 +90,25 @@ function postProjectMap (req, res){
     const SQL_REQUEST_MAPS = "SELECT idMap from map";
     if(req.body.scoreMatch == undefined || req.body.idRoster == undefined || req.body.scoresMaps == undefined){
         res.status(STATUS_CODE_BAD_REQUEST).send({
-            response : { error : "Au moins un de ces paramètres est manquant : scoreMatch, idRoster, scoresMaps" }
+           error : "Au moins un de ces paramètres est manquant : scoreMatch, idRoster, scoresMaps" 
         });
         return;     
     } 
     if(typeof req.body.scoreMatch != "number"){
         res.status(STATUS_CODE_BAD_REQUEST).send({
-            response : { error : "scoreMatch doit être de type number" }
+           error : "scoreMatch doit être de type number" 
         });
         return;
     }
     if(req.body.idRoster != "YFG" && req.body.idRoster !="YFO"){
         res.status(STATUS_CODE_BAD_REQUEST).send({
-            response : { error : "idRoster doit avoir une des valeurs suivantes : YFG, YFO" }
+            error : "idRoster doit avoir une des valeurs suivantes : YFG, YFO" 
         });
         return;   
     }
     if(!Array.isArray(req.body.scoresMaps) || !req.body.scoresMaps.length){
         res.status(STATUS_CODE_BAD_REQUEST).send({
-            response : { error : "scoresMaps doit être un tableau non vide" }
+            error : "scoresMaps doit être un tableau non vide" 
         });
         return;   
     }
@@ -127,19 +127,19 @@ function postProjectMap (req, res){
         req.body.scoresMaps.forEach((element, index) =>{
             if(element.idMap == undefined || element.scoreMap == undefined){
                 res.status(STATUS_CODE_BAD_REQUEST).send({
-                    response : { error : "scoresMaps doit contenir des éléments ayant pour attributs : idMap, scoreMap" }
+                    error : "scoresMaps doit contenir des éléments ayant pour attributs : idMap, scoreMap" 
                 });
                 return;   
             }
             if(result.findIndex(x => x.idMap == element.idMap) == -1){
                 res.status(STATUS_CODE_BAD_REQUEST).send({
-                    response : { error : `${element.idMap} n'est pas un idMap valide`}
+                    error : `${element.idMap} n'est pas un idMap valide`
                 });
                 return; 
             }
             if(typeof element.scoreMap != "number"){
                 res.status(STATUS_CODE_BAD_REQUEST).send({
-                    response : { error : "scoreMap doit être de type number" }
+                    error : "scoreMap doit être de type number" 
                 });
                 return;
             }
