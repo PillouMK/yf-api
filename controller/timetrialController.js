@@ -37,7 +37,7 @@ function getTimetrialsByMap(req, res) {
             });
             return;
         }
-        const mapInfos = result[0];
+        const mapInfos = result[0][0];
         const arrayTimetrial = {};
         const arrayShroom = [];
         const arrayNoShroom = [];
