@@ -108,6 +108,7 @@ function getTimetrialFromPlayer(req, res) {
         const arrayNoShroom = [];
         result[1].forEach(element => {
             let timetrial = element;
+            element.time = msToTime(element.time);
 
             // Sort timetrials by isShroomless
             if(!timetrial.isShroomless) {
@@ -175,5 +176,23 @@ const setUpdateParam = (req, nameParam, param) => {
     }
     return param;
 }
+
+function msToTime(s, isDiff = false) {
+
+    // Pad to 2 or 3 digits, default is 2
+    function pad(n, z) {
+      z = z || 2;
+      return ('00' + n).slice(-z);
+    }
+  
+    var ms = s % 1000;
+    s = (s - ms) / 1000;
+    var secs = s % 60;
+    s = (s - secs) / 60;
+    var mins = s % 60;
+  
+    return !isDiff ? pad(mins) + ':' + pad(secs) + '.' + pad(ms, 3) : secs + '.' + pad(ms, 3);
+}
+  
 
 module.exports = {getAllPlayers, getPlayer, getTimetrialFromPlayer, postPlayer, patchPlayer}

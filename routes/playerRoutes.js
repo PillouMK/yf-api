@@ -1,5 +1,4 @@
-const express = require('express');
-const { getAllPlayers, getPlayer, getTimetrialFromPlayer, postPlayer, patchPlayer } = require('../controller/playerController');
+const express = require('express')
 const router = express.Router();
 
 
