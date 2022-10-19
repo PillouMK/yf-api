@@ -41,16 +41,28 @@ function getTimetrialsByMap(req, res) {
         const arrayTimetrial = {};
         const arrayShroom = [];
         const arrayNoShroom = [];
+        let firstNoShroom;
+        let firstShroom;
         result[1].forEach(element => {
             let timetrial = element;
+            let duration = msToTime(timetrial.time);
                 // Sort timetrials by isShroomless
                 if(!timetrial.isShroomless) {
+                    firstShroom = arrayShroom.length ? firstShroom : timetrial.time;
+                    let difference = arrayShroom.length ? msToTime(timetrial.time - firstShroom, true) : "0.000s"
+                    timetrial.difference = difference+"s";
+                    timetrial.duration = duration;
                     arrayShroom.push(timetrial)
-                } else {
+                } else {            
+                    firstNoShroom = (arrayNoShroom.length) ? firstNoShroom : timetrial.time;
+                    let difference = arrayNoShroom.length ? msToTime(timetrial.time - firstNoShroom, true) : "0.000s"
+                    timetrial.difference = difference+"s";
+                    timetrial.duration = duration;
                     arrayNoShroom.push(timetrial);
                 }
                 // shroomless params is no longer needed
                 delete timetrial.isShroomless
+                delete timetrial.time
         });
 
         // add response, null if no data
@@ -148,7 +160,13 @@ function patchTimetrial(req, res) {
                     isSame = false;
                 }
             }
-            
+            let oldTime = OLD_RANKING.find(x => x.idPlayer === req.params.idPlayer).time;
+            let newTime = NEW_RANKING.find(x => x.idPlayer === req.params.idPlayer).time;
+            let diff = msToTime(oldTime-newTime, true);
+
+            diff = (oldTime >= newTime) ? "-" + diff : diff.slice(1);
+            oldTime = msToTime(oldTime);
+            newTime = msToTime(newTime);
             if(!isSame) {
                 const SQL_REQUEST_UPDATE = makeUpdateRequest(OLD_RANKING, NEW_RANKING);
 
@@ -157,11 +175,19 @@ function patchTimetrial(req, res) {
                         res.status(STATUS_CODE_BAD_REQUEST).send(err);
                         return;
                     }
-                    res.status(STATUS_CODE_OK).send(result[1]);
+                    res.status(STATUS_CODE_OK).send({
+                        diff : diff,
+                        newTime : newTime,
+                        oldTime: oldTime
+                    });
                 })
 
             } else {
-                res.status(STATUS_CODE_OK).send(result[1]);
+                res.status(STATUS_CODE_OK).send({
+                    diff : diff,
+                    newTime : newTime,
+                    oldTime: oldTime
+                });
             }
         
     })
@@ -226,4 +252,23 @@ const makeUpdateRequest = (OLD_RANKING, NEW_RANKING) => {
     }
     return SQL_REQUEST_UPDATE;
 }
+
+
+function msToTime(s, isDiff = false) {
+
+    // Pad to 2 or 3 digits, default is 2
+    function pad(n, z) {
+      z = z || 2;
+      return ('00' + n).slice(-z);
+    }
+  
+    let ms = s % 1000;
+    s = (s - ms) / 1000;
+    let secs = s % 60;
+    s = (s - secs) / 60;
+    let mins = s % 60;
+  
+    return !isDiff ? pad(mins) + ':' + pad(secs) + '.' + pad(ms, 3) : secs + '.' + pad(ms, 3);
+}
+
 module.exports = {getTimetrialsByMap, postTimetrial, patchTimetrial}
