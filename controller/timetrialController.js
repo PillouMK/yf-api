@@ -49,13 +49,13 @@ function getTimetrialsByMap(req, res) {
                 // Sort timetrials by isShroomless
                 if(!timetrial.isShroomless) {
                     firstShroom = arrayShroom.length ? firstShroom : timetrial.time;
-                    let difference = arrayShroom.length ? msToTime(timetrial.time - firstShroom, true) : "0.000s"
+                    let difference = arrayShroom.length ? msToTime(timetrial.time - firstShroom, true) : "0.000"
                     timetrial.difference = difference+"s";
                     timetrial.duration = duration;
                     arrayShroom.push(timetrial)
                 } else {            
                     firstNoShroom = (arrayNoShroom.length) ? firstNoShroom : timetrial.time;
-                    let difference = arrayNoShroom.length ? msToTime(timetrial.time - firstNoShroom, true) : "0.000s"
+                    let difference = arrayNoShroom.length ? msToTime(timetrial.time - firstNoShroom, true) : "0.000"
                     timetrial.difference = difference+"s";
                     timetrial.duration = duration;
                     arrayNoShroom.push(timetrial);
