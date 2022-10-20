@@ -8,7 +8,7 @@ const ProjectMapRoute = require("./routes/projectMapRoutes");
 const API_VERSION = "v1";
 const {STATUS_CODE_UNAUTHORISED} = require('./controller/variable');
 require('dotenv').config();
-// parse the body (Sinon ça peut faire d'la merde askip)
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
