@@ -161,9 +161,13 @@ function patchTimetrial(req, res) {
 
             let isSame = true;
             for(let i = 0; i < 10; i++) {
+                if(OLD_RANKING[i] == undefined) return
                 if(OLD_RANKING[i].idPlayer != NEW_RANKING[i].idPlayer) {
                     isSame = false;
                 }
+            }
+            if(OLD_RANKING.length != NEW_RANKING.length) {
+                isSame = false;
             }
             let oldTime = OLD_RANKING.find(x => x.idPlayer === req.params.idPlayer).time;
             let newTime = NEW_RANKING.find(x => x.idPlayer === req.params.idPlayer).time;
