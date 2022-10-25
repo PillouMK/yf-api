@@ -104,8 +104,26 @@ function postTimetrial(req, res) {
             }
             
             if(!isSame) {
-                const SQL_REQUEST_UPDATE = makeUpdateRequest(OLD_RANKING, NEW_RANKING);
+                if(params.isShroomless){
+                    const SQL_REQUEST_UPDATE = makeUpdateRequest(OLD_RANKING, NEW_RANKING);
 
+                    db.query(SQL_REQUEST_UPDATE, (_err, _result) => {
+                        if(_err) {
+                            res.status(STATUS_CODE_BAD_REQUEST).send(err);
+                            return;
+                        }
+                        res.status(STATUS_CODE_CREATED).send(result[1]);
+                    })
+                }
+                
+
+            } else {
+                res.status(STATUS_CODE_CREATED).send(result[1]);
+            }
+        } else {
+            if(params.isShroomless){
+                // if no data already exist for the idMap
+                const SQL_REQUEST_UPDATE = `UPDATE \`player\` SET \`tt_points\`=tt_points + 15,\`tt_top1\`= tt_top1 + 1,\`tt_top3\`= tt_top3 + 0 WHERE idPlayer = '${params.idPlayer}';`;
                 db.query(SQL_REQUEST_UPDATE, (_err, _result) => {
                     if(_err) {
                         res.status(STATUS_CODE_BAD_REQUEST).send(err);
@@ -113,20 +131,7 @@ function postTimetrial(req, res) {
                     }
                     res.status(STATUS_CODE_CREATED).send(result[1]);
                 })
-
-            } else {
-                res.status(STATUS_CODE_CREATED).send(result[1]);
-            }
-        } else {
-            // if no data already exist for the idMap
-            const SQL_REQUEST_UPDATE = `UPDATE \`player\` SET \`tt_points\`=tt_points + 15,\`tt_top1\`= tt_top1 + 1,\`tt_top3\`= tt_top3 + 0 WHERE idPlayer = '${params.idPlayer}';`;
-            db.query(SQL_REQUEST_UPDATE, (_err, _result) => {
-                if(_err) {
-                    res.status(STATUS_CODE_BAD_REQUEST).send(err);
-                    return;
-                }
-                res.status(STATUS_CODE_CREATED).send(result[1]);
-            })
+        }
         }
     })
 }
@@ -168,19 +173,21 @@ function patchTimetrial(req, res) {
             oldTime = msToTime(oldTime);
             newTime = msToTime(newTime);
             if(!isSame) {
-                const SQL_REQUEST_UPDATE = makeUpdateRequest(OLD_RANKING, NEW_RANKING);
+                if(req.params.isShroomless) {
+                    const SQL_REQUEST_UPDATE = makeUpdateRequest(OLD_RANKING, NEW_RANKING);
 
-                db.query(SQL_REQUEST_UPDATE, (_err, _result) => {
-                    if(_err) {
-                        res.status(STATUS_CODE_BAD_REQUEST).send(err);
-                        return;
-                    }
-                    res.status(STATUS_CODE_OK).send({
-                        diff : diff,
-                        newTime : newTime,
-                        oldTime: oldTime
-                    });
-                })
+                    db.query(SQL_REQUEST_UPDATE, (_err, _result) => {
+                        if(_err) {
+                            res.status(STATUS_CODE_BAD_REQUEST).send(err);
+                            return;
+                        }
+                        res.status(STATUS_CODE_OK).send({
+                            diff : diff,
+                            newTime : newTime,
+                            oldTime: oldTime
+                        });
+                    })
+                }
 
             } else {
                 res.status(STATUS_CODE_OK).send({
