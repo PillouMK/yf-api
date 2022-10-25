@@ -161,10 +161,12 @@ function patchTimetrial(req, res) {
 
             let isSame = true;
             for(let i = 0; i < 10; i++) {
-                if(OLD_RANKING[i] == undefined) return
-                if(OLD_RANKING[i].idPlayer != NEW_RANKING[i].idPlayer) {
-                    isSame = false;
+                if(OLD_RANKING[i] != undefined) {
+                    if(OLD_RANKING[i].idPlayer != NEW_RANKING[i].idPlayer) {
+                        isSame = false;
+                    }
                 }
+                
             }
             if(OLD_RANKING.length != NEW_RANKING.length) {
                 isSame = false;
