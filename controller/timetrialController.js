@@ -150,6 +150,12 @@ function patchTimetrial(req, res) {
             res.status(STATUS_CODE_BAD_REQUEST).send(err);
             return;
         }
+        if(result[1].changedRows === 0) {
+            res.status(STATUS_CODE_BAD_REQUEST).send({
+                error : "Temps n'existe pas"
+            });
+            return;
+        }
         if(!Array.isArray(result[0]) || !result[0].length) {
             res.status(STATUS_CODE_NOT_FOUND).send({
                         error : `'${req.params.idMap}' n'existe pas`
@@ -158,6 +164,8 @@ function patchTimetrial(req, res) {
         }
             const OLD_RANKING = result[0];
             const NEW_RANKING = result[2];
+
+            console.log(result[1])
 
             let isSame = true;
             for(let i = 0; i < 10; i++) {
@@ -171,11 +179,12 @@ function patchTimetrial(req, res) {
             if(OLD_RANKING.length != NEW_RANKING.length) {
                 isSame = false;
             }
+            console.log(OLD_RANKING);
             let oldTime = OLD_RANKING.find(x => x.idPlayer === req.params.idPlayer).time;
             let newTime = NEW_RANKING.find(x => x.idPlayer === req.params.idPlayer).time;
             let diff = msToTime(oldTime-newTime, true);
 
-            diff = (oldTime >= newTime) ? "-" + diff : diff.slice(1);
+            diff = (oldTime >= newTime) ? "-" + diff : diff;
             oldTime = msToTime(oldTime);
             newTime = msToTime(newTime);
             if(!isSame) {
@@ -268,7 +277,8 @@ const makeUpdateRequest = (OLD_RANKING, NEW_RANKING) => {
 
 
 function msToTime(s, isDiff = false) {
-
+    s = Math.abs(s);
+    let saveTime = s;
     // Pad to 2 or 3 digits, default is 2
     function pad(n, z) {
       z = z || 2;
@@ -280,6 +290,10 @@ function msToTime(s, isDiff = false) {
     let secs = s % 60;
     s = (s - secs) / 60;
     let mins = s % 60;
+    console.log(saveTime);
+    if(saveTime < 1000 && saveTime > -1000) {
+        return "0."+pad(saveTime, 3);
+    }
   
     return !isDiff ? pad(mins) + ':' + pad(secs) + '.' + pad(ms, 3) : secs + '.' + pad(ms, 3);
 }
