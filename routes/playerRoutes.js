@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router();
-
+const {getAllPlayers, getPlayer, getTimetrialFromPlayer, patchPlayer, postPlayer} = require('../controller/playerController');
 
 // GET /player
 router.get('/', (req, res) => {
