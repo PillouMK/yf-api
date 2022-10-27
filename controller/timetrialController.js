@@ -1,3 +1,4 @@
+const { NewsChannel } = require('discord.js');
 const config = require('../databaseConfig.js');
 const {STATUS_CODE_OK, STATUS_CODE_CREATED, STATUS_CODE_BAD_REQUEST, STATUS_CODE_NOT_FOUND} = require('./variable');
 // Connexion à la database
@@ -91,6 +92,7 @@ function postTimetrial(req, res) {
             return;
         }
         if(Array.isArray(result[0]) && result[0].length) {
+            console.log("test", 0);
             const OLD_RANKING = result[0];
             const NEW_RANKING = result[2]
 
@@ -102,6 +104,7 @@ function postTimetrial(req, res) {
                     }
                 }
             }
+            if(OLD_RANKING.length != NEW_RANKING.length) isSame = false;
             
             if(!isSame) {
                 if(!params.isShroomless){
@@ -123,6 +126,7 @@ function postTimetrial(req, res) {
                 res.status(STATUS_CODE_CREATED).send(result[1]);
             }
         } else {
+            console.log("test", 1);
             if(!params.isShroomless){
                 const SQL_REQUEST_PLAYER = `select idRoster from player WHERE idPlayer = '${params.idPlayer}';`;
                 db.query(SQL_REQUEST_PLAYER, (_err, _result) => {
