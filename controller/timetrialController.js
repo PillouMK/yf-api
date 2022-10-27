@@ -1,4 +1,3 @@
-const { NewsChannel } = require('discord.js');
 const config = require('../databaseConfig.js');
 const {STATUS_CODE_OK, STATUS_CODE_CREATED, STATUS_CODE_BAD_REQUEST, STATUS_CODE_NOT_FOUND} = require('./variable');
 // Connexion à la database
@@ -92,7 +91,7 @@ function postTimetrial(req, res) {
             return;
         }
         if(Array.isArray(result[0]) && result[0].length) {
-            console.log("test", 0);
+            
             const OLD_RANKING = result[0];
             const NEW_RANKING = result[2]
 
@@ -126,14 +125,14 @@ function postTimetrial(req, res) {
                 res.status(STATUS_CODE_CREATED).send(result[1]);
             }
         } else {
-            console.log("test", 1);
+            
             if(!params.isShroomless){
                 const SQL_REQUEST_PLAYER = `select idRoster from player WHERE idPlayer = '${params.idPlayer}';`;
                 db.query(SQL_REQUEST_PLAYER, (_err, _result) => {
                     // if no data already exist for the idMap
                     let idRoster = _result[0].idRoster;
                     if(idRoster === 'YFG' || idRoster === 'YFO') {
-                        const SQL_REQUEST_UPDATE = `UPDATE \`player\` SET \`tt_points\`=tt_points + 15,\`tt_top1\`= tt_top1 + 1,\`tt_top3\`= tt_top3 + 0 WHERE idPlayer = '${params.idPlayer}';`;
+                        const SQL_REQUEST_UPDATE = `UPDATE \`player\` SET \`tt_points\`=tt_points + 10,\`tt_top1\`= tt_top1 + 1,\`tt_top3\`= tt_top3 + 0 WHERE idPlayer = '${params.idPlayer}';`;
                         db.query(SQL_REQUEST_UPDATE, (__err, __result) => {
                             if(__err) {
                                 res.status(STATUS_CODE_BAD_REQUEST).send(err);
@@ -193,9 +192,8 @@ function patchTimetrial(req, res) {
                 }
                 
             }
-            if(OLD_RANKING.length != NEW_RANKING.length) {
-                isSame = false;
-            }
+            if(OLD_RANKING.length != NEW_RANKING.length) isSame = false;
+
             let oldTime = OLD_RANKING.find(x => x.idPlayer === req.params.idPlayer).time;
             let newTime = NEW_RANKING.find(x => x.idPlayer === req.params.idPlayer).time;
             let diff = msToTime(oldTime-newTime, true);
