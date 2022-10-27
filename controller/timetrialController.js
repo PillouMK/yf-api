@@ -138,9 +138,10 @@ function postTimetrial(req, res) {
                             res.status(STATUS_CODE_CREATED).send(result[1]);
                             return;
                         })
-                    }
-                    res.status(STATUS_CODE_CREATED).send(result[1]);
-                        return;     
+                    } else {
+                        res.status(STATUS_CODE_CREATED).send(result[1]);
+                        return;  
+                    }  
                 })
             } else {
                 res.status(STATUS_CODE_CREATED).send(result[1]);
