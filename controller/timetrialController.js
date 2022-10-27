@@ -121,17 +121,28 @@ function postTimetrial(req, res) {
                 res.status(STATUS_CODE_CREATED).send(result[1]);
             }
         } else {
-            if(params.isShroomless){
-                // if no data already exist for the idMap
-                const SQL_REQUEST_UPDATE = `UPDATE \`player\` SET \`tt_points\`=tt_points + 15,\`tt_top1\`= tt_top1 + 1,\`tt_top3\`= tt_top3 + 0 WHERE idPlayer = '${params.idPlayer}';`;
-                db.query(SQL_REQUEST_UPDATE, (_err, _result) => {
-                    if(_err) {
-                        res.status(STATUS_CODE_BAD_REQUEST).send(err);
-                        return;
+            if(!params.isShroomless){
+                const SQL_REQUEST_PLAYER = `select idRoster from player WHERE idPlayer = '${params.idPlayer}';`;
+                db.query(SQL_REQUEST_PLAYER, (_err, _result) => {
+                    // if no data already exist for the idMap
+                    let idRoster = _result[0].idRoster;
+                    if(idRoster === 'YFG' || idRoster === 'YFO') {
+                        const SQL_REQUEST_UPDATE = `UPDATE \`player\` SET \`tt_points\`=tt_points + 15,\`tt_top1\`= tt_top1 + 1,\`tt_top3\`= tt_top3 + 0 WHERE idPlayer = '${params.idPlayer}';`;
+                        db.query(SQL_REQUEST_UPDATE, (__err, __result) => {
+                            if(__err) {
+                                res.status(STATUS_CODE_BAD_REQUEST).send(err);
+                                return;
+                            }
+                            res.status(STATUS_CODE_CREATED).send(result[1]);
+                            return;
+                        })
                     }
                     res.status(STATUS_CODE_CREATED).send(result[1]);
+                        return;     
                 })
-        }
+            } else {
+                res.status(STATUS_CODE_CREATED).send(result[1]);
+            }
         }
     })
 }
@@ -165,8 +176,6 @@ function patchTimetrial(req, res) {
             const OLD_RANKING = result[0];
             const NEW_RANKING = result[2];
 
-            console.log(result[1])
-
             let isSame = true;
             for(let i = 0; i < 10; i++) {
                 if(OLD_RANKING[i] != undefined) {
@@ -179,7 +188,6 @@ function patchTimetrial(req, res) {
             if(OLD_RANKING.length != NEW_RANKING.length) {
                 isSame = false;
             }
-            console.log(OLD_RANKING);
             let oldTime = OLD_RANKING.find(x => x.idPlayer === req.params.idPlayer).time;
             let newTime = NEW_RANKING.find(x => x.idPlayer === req.params.idPlayer).time;
             let diff = msToTime(oldTime-newTime, true);
