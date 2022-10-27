@@ -104,7 +104,7 @@ function postTimetrial(req, res) {
             }
             
             if(!isSame) {
-                if(params.isShroomless){
+                if(!params.isShroomless){
                     const SQL_REQUEST_UPDATE = makeUpdateRequest(OLD_RANKING, NEW_RANKING);
 
                     db.query(SQL_REQUEST_UPDATE, (_err, _result) => {
@@ -113,10 +113,12 @@ function postTimetrial(req, res) {
                             return;
                         }
                         res.status(STATUS_CODE_CREATED).send(result[1]);
+                        return;
                     })
+                } else {
+                    res.status(STATUS_CODE_CREATED).send(result[1]);
+                    return;
                 }
-                
-
             } else {
                 res.status(STATUS_CODE_CREATED).send(result[1]);
             }
@@ -142,6 +144,7 @@ function postTimetrial(req, res) {
                 })
             } else {
                 res.status(STATUS_CODE_CREATED).send(result[1]);
+                return;
             }
         }
     })
