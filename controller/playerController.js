@@ -142,7 +142,7 @@ function postPlayer(req, res) {
 }
 
 function patchPlayer(req, res) {
-    let name = req.body.hasOwnProperty("name") ? `\`idPlayer\`='${req.body.name}',` : "";
+    let name = req.body.hasOwnProperty("name") ? `\`name\`='${req.body.name}',` : "";
     let idRoster = req.body.hasOwnProperty("idRoster") ? `\`idRoster\`='${req.body.idRoster}',` : "";
     let tt_points = "\`tt_points\`= tt_points +";
     let tt_top1 = "\`tt_top1\`= tt_top1 +";
