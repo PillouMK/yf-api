@@ -304,7 +304,6 @@ function msToTime(s, isDiff = false) {
     let secs = s % 60;
     s = (s - secs) / 60;
     let mins = s % 60;
-    console.log(saveTime);
     if(saveTime < 1000 && saveTime > -1000) {
         return "0."+pad(saveTime, 3);
     }
