@@ -3,7 +3,7 @@ const router = express.Router();
 const {getAllprojectMap, postProjectMap} = require('../controller/projectMapController');
 
 // GET /projectmap/
-router.get('/', (req, res) => {
+router.get('/:idRoster', (req, res) => {
     getAllprojectMap(req, res);
 });
 
