@@ -5,7 +5,8 @@ const db = config.connection;
 
 function getAllprojectMap(req, res){
     let SQL_ALL_SELECT="";
-    const limit = (req.query.limit != undefined) ? req.query.limit : 10;
+    const month = req.query.month;
+    const iteration = req.query.iteration
     if(req.query.idRoster == undefined){
         res.status(STATUS_CODE_BAD_REQUEST).send({
             error : "Paramètre idRoster requis" 
@@ -13,12 +14,11 @@ function getAllprojectMap(req, res){
         return;
     }
     const idRoster = req.query.idRoster 
-    const SQL_REQUEST_PROJECT_MAP = (idMap, limit,idRoster) =>{ 
+    const SQL_REQUEST_PROJECT_MAP = (idMap, month ,idRoster) =>{ 
         return `SELECT pm.*,m.nameMap FROM projectmap as pm 
         JOIN map as m ON pm.idMap=m.idMap 
-        WHERE pm.idMap='${idMap}' AND pm.idRoster='${idRoster}'
-        ORDER BY pm.id DESC 
-        LIMIT ${limit};`;
+        WHERE pm.idMap='${idMap}' AND pm.idRoster='${idRoster}' AND DATE(pm.date) >= (DATE(NOW()) - INTERVAL ${month} MONTH)
+        ORDER BY pm.id DESC;`;
     };
     const SQL_REQUEST_MAPS="SELECT idMap FROM map";
     db.query(SQL_REQUEST_MAPS, (err, result) => {
@@ -35,7 +35,7 @@ function getAllprojectMap(req, res){
         }
 
         result.forEach(element => {
-            SQL_ALL_SELECT += SQL_REQUEST_PROJECT_MAP(element.idMap,limit,idRoster);
+            SQL_ALL_SELECT += SQL_REQUEST_PROJECT_MAP(element.idMap, month, idRoster);
         });
         db.query(SQL_ALL_SELECT, (_err, _result) => {
             if(_err){
@@ -49,6 +49,7 @@ function getAllprojectMap(req, res){
                 return;
             }
             let RESPONSE_ARRAY = [];
+            let RESPONSE_ARRAY_2 = [];
             _result.forEach(_element =>{
                 if(_element.length){
                     let coef = 0;
@@ -57,22 +58,28 @@ function getAllprojectMap(req, res){
                         coef += elt.coef;
                         score += elt.score * elt.coef;
                     })
+                    let numberOfData = _element.length;
                     let scoreOfMap = Math.round(score * 10 / coef) / 10; 
                     let scoreMap = {
                         idMap : _element[0].idMap,
                         nameMap : _element[0].nameMap,
                         score : scoreOfMap,
-                        iteration : _element.length
+                        iteration : numberOfData,
                     }
-                    RESPONSE_ARRAY.push(scoreMap)
+                    if(numberOfData >= iteration) RESPONSE_ARRAY.push(scoreMap)
+                    else RESPONSE_ARRAY_2.push(scoreMap);
                 }
             })
             if(RESPONSE_ARRAY.length){
                 RESPONSE_ARRAY.sort((a, b) => {
                     return b.score - a.score;
+                });
+                RESPONSE_ARRAY_2.sort((a, b) => {
+                    return b.score - a.score;
                 })
                 res.status(STATUS_CODE_OK).send({
-                        projectMapArray : RESPONSE_ARRAY                   
+                        projectMapValid : RESPONSE_ARRAY,
+                        projectMapNotValid : RESPONSE_ARRAY_2                  
                 });
             } else {
                 res.status(STATUS_CODE_NOT_FOUND).send({ 
