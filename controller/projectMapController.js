@@ -6,14 +6,22 @@ const db = config.connection;
 function getAllprojectMap(req, res){
     let SQL_ALL_SELECT="";
     const month = req.query.month;
-    const iteration = req.query.iteration
-    if(req.query.idRoster == undefined){
+    const iteration = req.query.iteration;
+    const idRoster = req.params.idRoster ;
+    if(idRoster == undefined){
         res.status(STATUS_CODE_BAD_REQUEST).send({
             error : "Paramètre idRoster requis" 
         });
         return;
     }
-    const idRoster = req.query.idRoster 
+
+    if(idRoster != "YFG" && idRoster != "YFO"){
+        res.status(STATUS_CODE_BAD_REQUEST).send({
+            error : "Paramètre idRoster incrorrect (attendu : YFG ou YFO)" 
+        });
+        return;
+    }
+    
     const SQL_REQUEST_PROJECT_MAP = (idMap, month ,idRoster) =>{ 
         return `SELECT pm.*,m.nameMap FROM projectmap as pm 
         JOIN map as m ON pm.idMap=m.idMap 
