@@ -71,6 +71,7 @@ function getAllprojectMap(req, res){
                     let scoreMap = {
                         idMap : _element[0].idMap,
                         nameMap : _element[0].nameMap,
+                        initialGame : _element[0].initialGame,
                         score : scoreOfMap,
                         iteration : numberOfData,
                     }
