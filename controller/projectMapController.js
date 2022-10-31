@@ -23,7 +23,7 @@ function getAllprojectMap(req, res){
     }
     
     const SQL_REQUEST_PROJECT_MAP = (idMap, month ,idRoster) =>{ 
-        return `SELECT pm.*,m.nameMap FROM projectmap as pm 
+        return `SELECT pm.*,m.nameMap, m.initialGame FROM projectmap as pm 
         JOIN map as m ON pm.idMap=m.idMap 
         WHERE pm.idMap='${idMap}' AND pm.idRoster='${idRoster}' AND DATE(pm.date) >= (DATE(NOW()) - INTERVAL ${month} MONTH)
         ORDER BY pm.id DESC;`;
