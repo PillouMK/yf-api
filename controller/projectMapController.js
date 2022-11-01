@@ -79,16 +79,21 @@ function getAllprojectMap(req, res){
                     else RESPONSE_ARRAY_2.push(scoreMap);
                 }
             })
-            if(RESPONSE_ARRAY.length){
-                RESPONSE_ARRAY.sort((a, b) => {
-                    return b.score - a.score;
-                });
-                RESPONSE_ARRAY_2.sort((a, b) => {
-                    return b.score - a.score;
-                })
+            if(RESPONSE_ARRAY.length || RESPONSE_ARRAY_2.length){
+                if(RESPONSE_ARRAY.length) {
+                    RESPONSE_ARRAY.sort((a, b) => {
+                        return b.score - a.score;
+                    });
+                }
+                if(RESPONSE_ARRAY_2.length) {
+                    RESPONSE_ARRAY_2.sort((a, b) => {
+                        return b.score - a.score;
+                    })
+                }
+                
                 res.status(STATUS_CODE_OK).send({
-                        projectMapValid : RESPONSE_ARRAY,
-                        projectMapNotValid : RESPONSE_ARRAY_2                  
+                        projectMapValid : (RESPONSE_ARRAY.length) ? RESPONSE_ARRAY : null,
+                        projectMapNotValid : (RESPONSE_ARRAY_2.length) ? RESPONSE_ARRAY_2 : null                 
                 });
             } else {
                 res.status(STATUS_CODE_NOT_FOUND).send({ 
