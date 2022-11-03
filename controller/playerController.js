@@ -155,16 +155,72 @@ function patchPlayer(req, res) {
     // set the , for SQL request
     tt_points += ",";
     tt_top1 += ","; 
+    let SQL_REQUEST_RESET = "";
+    if(idRoster != "") {
+        SQL_REQUEST_RESET = "UPDATE `player` SET `tt_points`=0,`tt_top1`=0,`tt_top3`=0;SELECT idMap from map"
+    }
     
-    const SQL_REQUEST = `UPDATE player SET ${name} ${idRoster} ${tt_points} ${tt_top1} ${tt_top3} WHERE player.idPlayer = ${req.params.idPlayer}`
+    const SQL_REQUEST = `UPDATE player SET ${name} ${idRoster} ${tt_points} ${tt_top1} ${tt_top3} WHERE player.idPlayer = ${req.params.idPlayer};`
     
-    db.query(SQL_REQUEST, (err, result) => {
+    db.query(SQL_REQUEST + SQL_REQUEST_RESET, (err, result) => {
         if(err) {
             res.status(STATUS_CODE_BAD_REQUEST).send(err);
-        } else {
+            return;
+        } 
+        if(idRoster == "") {
             res.status(STATUS_CODE_OK).send(result);
+        } else {
+            
+            console.log(result[2]);
+            let arrayMap = result[2];
+            let SQL_TOP_BY_MAP = "";
+            arrayMap.forEach(element => {
+                SQL_TOP_BY_MAP += getAllTopByMap(element.idMap);
+            })
+            db.query(SQL_TOP_BY_MAP, (_err, _result) => {
+                if(_err) {
+                    res.status(STATUS_CODE_BAD_REQUEST).send(_err);
+                    return;
+                } 
+                let SQL_UPDATE_POINT_REQUEST = "";
+                console.log(_result);
+                _result.forEach(map => {
+                    map.forEach((player, index) => {
+                        let point = convertPlaceToPoints(index);
+                        let top1 = (index == 0) ? 1 : 0;
+                        let top3 = (index == 1 || index == 2) ? 1 : 0;
+                        SQL_UPDATE_POINT_REQUEST += makeUpdateRequest(player.idPlayer, point, top1, top3);
+                    });
+                });
+                db.query(SQL_UPDATE_POINT_REQUEST, (_newErr, _newResult) => {
+                    if(_newErr) {
+                        res.status(STATUS_CODE_BAD_REQUEST).send(_newErr);
+                        return;
+                    } else {
+                        res.status(STATUS_CODE_OK).send(result);
+                        return;
+                    }
+                })
+            })
         }
     })
+}
+
+const convertPlaceToPoints = (index) => {
+    let place = parseInt(index);
+    return (10 - place)
+}
+
+const makeUpdateRequest = (idPlayer, points, top1, top3) => {
+    return `UPDATE \`player\` SET \`tt_points\`=tt_points + ${points},\`tt_top1\`= tt_top1 + ${top1},\`tt_top3\`= tt_top3 + ${top3} WHERE idPlayer = '${idPlayer}';`;
+}
+
+const getAllTopByMap = (idMap) => {
+    return `SELECT player.idPlayer FROM timetrial 
+    JOIN player ON player.idPlayer = timetrial.idPlayer 
+    WHERE player.idRoster = 'YFG' AND timetrial.idMap = '${idMap}' OR player.idRoster = 'YFO' AND timetrial.idMap = '${idMap}'
+    ORDER BY timetrial.time
+    LImit 10;`
 }
 
 // set param for update SQL request
