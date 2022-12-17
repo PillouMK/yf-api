@@ -136,7 +136,13 @@ function postPlayer(req, res) {
         if(err) {
             res.status(STATUS_CODE_BAD_REQUEST).send(err);
         } else {
-            res.status(STATUS_CODE_CREATED).send(result);
+            res.status(STATUS_CODE_CREATED).send({
+                player: {
+                    idPlayer: req.body.idPlayer,
+                    playerName: req.body.name,
+                    idRoster: req.body.idRoster,
+                  }
+            });
         }
     })
 }
@@ -168,7 +174,7 @@ function patchPlayer(req, res) {
             return;
         } 
         if(idRoster == "") {
-            res.status(STATUS_CODE_OK).send(result);
+            res.status(STATUS_CODE_OK).send(result[0]);
         } else {
             
             console.log(result[2]);
@@ -183,7 +189,7 @@ function patchPlayer(req, res) {
                     return;
                 } 
                 let SQL_UPDATE_POINT_REQUEST = "";
-                console.log(_result);
+                
                 _result.forEach(map => {
                     map.forEach((player, index) => {
                         let point = convertPlaceToPoints(index);
@@ -197,7 +203,7 @@ function patchPlayer(req, res) {
                         res.status(STATUS_CODE_BAD_REQUEST).send(_newErr);
                         return;
                     } else {
-                        res.status(STATUS_CODE_OK).send(result);
+                        res.status(STATUS_CODE_OK).send(result[0]);
                         return;
                     }
                 })
