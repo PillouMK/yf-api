@@ -17,16 +17,15 @@ app.listen(8080, () => {  console.log('Serveur à l\'écoute, yeah')       });
 
 app.use((req, res, next) => {
 
-    // Only GET are public
-    if(req.method != "GET") {
+   
         // API keys 
         if(req.headers["api-key"] === process.env.api_key) {
             next();
         } else {
             res.status(STATUS_CODE_UNAUTHORISED).json({error: 'unauthorised'})
         }
-    }
-    next();
+    
+    
 })
 
 // Ressources
