@@ -2,11 +2,11 @@
 openapi: 3.0.0
 info:
   title: Yoshi Family API
-  description: private API for Yoshi Family team
+  description: API for Yoshi Family team
   version: 1.0.0
 servers:
 - url: https://yoshi-family-api.fr/v1
-  description: API Key required
+  description: API Key is required for every request except GET request
 paths:
   /players:
     get:
@@ -288,7 +288,7 @@ paths:
     get:
       tags:
       - Project Map
-      description: coming soon
+      description: "get data for each maps for the last x month specified, data are valid only if there is y iteration of them"
       operationId: getProjectMap
       parameters:
       - name: idRoster
