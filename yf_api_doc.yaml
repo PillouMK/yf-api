@@ -1,0 +1,773 @@
+---
+openapi: 3.0.0
+info:
+  title: Yoshi Family API
+  description: private API for Yoshi Family team
+  version: 1.0.0
+servers:
+- url: https://yoshi-family-api.fr/v1
+  description: API Key required
+paths:
+  /players:
+    get:
+      tags:
+      - Players
+      description: Return all player, sorted by points then top1 then top3 (for timetrial ranking))
+      operationId: getAllPlayer
+      responses:
+        "200":
+          description: successful request, status code OK
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/getAllPlayers'
+    post:
+      tags:
+      - Players
+      description: Add a new player
+      operationId: postPlayer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postPlayerParameters'
+      responses:
+        "201":
+          description: Player successfully created
+          content:
+            application/json:
+              schema:
+                example: {"player":{"idPlayer":"450353797450039336","name":"player1","idRoster":"YFG","rosterName":"Galaxy"}}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorSQL'
+  /players/{idPlayer}:
+    get:
+      tags:
+      - Players
+      description: Get a player by an id
+      operationId: getPlayerById
+      parameters:
+      - name: idPlayer
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: The player found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getPlayerById'
+        "404":
+          description: Player not found
+          content:
+            application/json:
+              schema:
+                example: {     
+                    "error" : "{idPlayer} n'existe pas"      
+                }
+    patch:
+      tags:
+      - Players
+      description: Edit a player (only name or IdRoster)
+      operationId: patchPlayer
+      parameters:
+      - name: idPlayer
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description : "Parameters aren't required, you can change only one of these if needed"
+        required: true
+        content:
+          application/json:
+            schema:
+              example : {
+                "name": "newName",
+                "idRoster" : "newIdRoster"
+              }
+      responses:
+        "200":
+          description: Confirm the edit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/editSQL'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorSQL'
+  /players/{idPlayer}/timetrial:
+    get:
+      tags:
+      - Players
+      description: get all timetrials for a player
+      operationId: getTimetrialByIdPlayer
+      parameters:
+      - name: idPlayer
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: all timetrial from a player, in two arrays (shroomless and with items)
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/timetrialsByIdPlayer'
+  /timetrial/{idMap}:
+    get:
+      tags:
+      - Timetrial
+      description: Return all Yoshi family player's time for a idMap, you can filter by idRoster
+      operationId: timetrialByMap
+      parameters:
+      - name: idMap
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: idRoster
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: All timetrials filtered by rosters (YFG, YFO or both) in two array, shroomless and not shroomless
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/getTimetrial'
+        "404":
+          description: idMap doesn't exist
+          content:
+            application/json:
+              example: {
+               error: "{idMap} n'est pas un idMap valide" 
+              }
+  /timetrial/{idMap}/{idPlayer}/{isShroomless}:
+    patch:
+      tags:
+      - Timetrial
+      description: Edit time for a player in a map
+      operationId: timetrialPut
+      parameters:
+      - name: idMap
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: idPlayer
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: isShroomless
+        in: path
+        required: true
+        schema:
+         type: string
+      requestBody:
+        description : "the new time, in millisecond"
+        required: true
+        content:
+          application/json:
+            schema:
+              example : {
+                "time": 80000,
+              }
+      responses:
+        "200":
+          description: Confirm the edit, show new time, old time and difference
+          content:
+            application/json:
+              schema:
+                type: string
+                format: uri
+                example: {
+                  diff : "0.1s",
+                  newTime : "1.25.325",
+                  oldTime: "1.26.325"
+                }
+        "404":
+          description: the timetrial for this player, this map and this mode doesn't exist
+          content:
+            application/json:
+              schema:
+                type: string
+                format: uri
+                example: {
+                  error: "Le temps n'existe pas"
+                }
+        "400":
+          description: The map doesn't exist
+          content:
+            application/json:
+              schema:
+                type: string
+                format: uri
+                example: {
+                  error: "{idMap} n'existe pas"
+                }
+  /timetrial:
+    post:
+      tags:
+      - Timetrial
+      description: Add a time for a player in a map in a mode
+      operationId: timetrialPost
+      requestBody:
+        description : "Data for the timetrial, time is in millisecond"
+        required: true
+        content:
+          application/json:
+            schema:
+              example : {
+                "idMap": "bMG",
+                "idPlayer": "450353797450039336",
+                "isShroomless": 1,
+                "time": 82000
+              }
+      responses:
+        "200":
+          description: Confirm the new time
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/addSQL'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorSQL'
+  /maps:
+    get:
+      tags:
+      - Maps
+      description: Return all map, sort by idMap
+      operationId: allMaps
+      responses:
+        "200":
+          description: Array of all maps
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/listOfMap'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorSQL'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: 
+                example : { error: "There is no map" }
+  /projectMap/{idRoster}:
+    get:
+      tags:
+      - Project Map
+      description: coming soon
+      operationId: getProjectMap
+      parameters:
+      - name: idRoster
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: iteration
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: month
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "For each map, return the map informations, the score and the number of iteration, map are sorted by score DESC, there is two array : an array for valids data and an other for not valids."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getProjectMap'
+        "404":
+          description: "There is no data"
+          content:
+            application/json:
+              schema:
+                example: { error: "No projectMap data" }
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorSQL'
+  /projectMap:
+    post:
+      tags:
+      - Project Map
+      description: add data for projetMap table
+      operationId: projectMapPost
+      requestBody:
+        description : "ScoreMatch is the difference between the two team at the end of the match, ScoresMaps is an array with the idMap and score of each race played in the match"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postProjectMap'
+      responses:
+        "200":
+          description: Confirm adding data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/addSQL'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/addSQL'
+components:
+  schemas:
+    getAllPlayers:
+      type: object
+      properties:
+        idPlayer:
+          type: string
+        name:
+          type: string
+        idRoster:
+          type: string
+        rosterName:
+          type: string
+        points:
+          type: integer
+        top1:
+          type: integer
+        top3:
+          type: integer
+      format: string
+      example:
+      - idPlayer: "450353797450039336"
+        name: "Pillou"
+        idRoster: "YFG"
+        rosterName: "Galaxy"
+        points: 500
+        top1: 5
+        top3: 32
+      - idPlayer: "450353797450039332"
+        name: "Pillou2"
+        idRoster: "YFG"
+        rosterName: "Galaxy"
+        points: 350
+        top1: 2
+        top3: 15
+      - idPlayer: "450353797450039333"
+        name: "Pillou3"
+        idRoster: "YFG"
+        rosterName: "Galaxy"
+        points: 350
+        top1: 1
+        top3: 25
+    getPlayerById:
+      type: object
+      properties:
+        idPlayer:
+          type: string
+        name:
+          type: string
+        idRoster:
+          type: string
+        rosterName:
+          type: string
+        points:
+          type: integer
+        top1:
+          type: integer
+        top3:
+          type: integer
+      example:
+        idPlayer: "450353797450039336"
+        name: "Pillou"
+        idRoster: "YFG"
+        rosterName: "Galaxy"
+        points: 500
+        top1: 5
+        top3: 32
+    postPlayerParameters:
+      type: object
+      properties:
+        idPlayer:
+          type: string
+        name:
+          type: string
+        idRoster:
+          type: string
+      example:
+        idPlayer: "450353797450039336"
+        playerName: "Pillou"
+        idRoster: "YFG"
+    errorSQL: 
+      type: object
+      properties:
+        code: 
+          type: string
+        errno: 
+          type: integer
+        sqlMessage: 
+          type: string
+        sqlState: 
+          type: integer
+        index: 
+          type: integer
+        sql: 
+          type: string
+      example : {
+                  "code": "ER_NO_REFERENCED_ROW_2",
+                  "errno": 1452,
+                  "sqlMessage": "error message",
+                  "sqlState": "23000",
+                  "index": 0,
+                  "sql": "SQL REQUEST"
+                }
+    editSQL:
+      type: object
+      properties:
+        fieldCount: 
+          type: integer
+        affectedRows: 
+          type: integer
+        insertId: 
+          type: integer
+        serverStatus: 
+          type: integer
+        warningCount: 
+          type: integer
+        message: 
+          type: string
+        protocol41: 
+          type: boolean
+        changedRows: 
+          type: integer
+      example : {
+                  "fieldCount": 0,
+                  "affectedRows": 1,
+                  "insertId": 0,
+                  "serverStatus": 42,
+                  "warningCount": 0,
+                  "message": "(Rows matched: 1  Changed: 1  Warnings: 0",
+                  "protocol41": true,
+                  "changedRows": 1
+                }
+    addSQL:
+      type: object
+      properties:
+          fieldCount: 
+            type: integer
+          affectedRows: 
+            type: integer
+          insertId: 
+            type: integer
+          serverStatus: 
+            type: integer
+          warningCount: 
+            type: integer
+          message: 
+            type: string
+          protocol41: 
+            type: boolean
+          changedRows: 
+            type: integer
+      example: {
+                "fieldCount": 0,
+                "affectedRows": 1,
+                "insertId": 0,
+                "serverStatus": 10,
+                "warningCount": 0,
+                "message": "",
+                "protocol41": true,
+                "changedRows": 0
+              }
+    playersidPlayertimetrial_timeShroom:
+      type: object
+      properties:
+        idMap:
+          type: string
+        time:
+          type: string
+    timetrialsByIdPlayer:
+      type: object
+      properties:
+        timeShroom:
+          type: array
+          items:
+            $ref: '#/components/schemas/playersidPlayertimetrial_timeShroom'
+        timeShroomLess:
+          type: array
+          items:
+            $ref: '#/components/schemas/playersidPlayertimetrial_timeShroom'
+      example:
+        timeShroom:
+        - idMap: dHC
+          time: 1.51.236
+        - idMap: dHC
+          time: 1.51.236
+        - idMap: dHC
+          time: 1.51.236
+        timeShroomLess:
+        - idMap: dHC
+          time: 1.51.236
+        - idMap: dHC
+          time: 1.51.236
+        - idMap: dHC
+          time: 1.51.236
+    getTimetrial:
+      type: object
+      properties:
+        infoMap:
+          type: object
+          properties:
+            idMap:
+              type: string
+            nameMap:
+              type: string
+            minia: 
+              type: string
+            initialGame:
+              type: string
+            DLC:
+              type: string
+            retro:
+              type: string
+        timetrials:
+          type: object
+          properties:
+            arrayShroom:
+              type: array
+              items: 
+                $ref: '#/components/schemas/object_time'
+            arrayNoShroom:
+              type: array
+              items: 
+                $ref: '#/components/schemas/object_time'
+      example:
+        infosMap:
+          idMap: bMG
+          nameMap: Gorge Champignon
+          minia: url of the map picture
+          initialGame: WII
+          DLC: 0
+          retro: 1
+        timetrials:
+          arrayShroom:
+            - idPlayer: "290624797820583946"
+              name: "Théo"
+              date: "2022-10-27T20:13:17.000Z"
+              rosterName: "Galaxy"
+              idRoster: "YFG"
+              difference: "0.000s"
+              duration: "01:25.995"
+            - idPlayer: "156445194861019136"
+              name: "Ti_C"
+              date: "2022-10-27T20:13:14.000Z"
+              rosterName: "Galaxy"
+              idRoster: "YFG"
+              difference: "0.838s"
+              duration: "01:26.833"
+            - idPlayer: "133978257006526464"
+              name: "Thib"
+              date: "2022-10-27T20:13:14.000Z"
+              rosterName: "Odyssey"
+              idRoster: "YFO"
+              difference: "1.174s"
+              duration: "01:27.169"
+          arrayNoShroom:
+            - idPlayer: "290624797820583946"
+              name: "Théo"
+              date: "2022-10-27T20:13:17.000Z"
+              rosterName: "Galaxy"
+              idRoster: "YFG"
+              difference: "0.000s"
+              duration: "01:26.995"
+            - idPlayer: "133978257006526464"
+              name: "Thib"
+              date: "2022-10-27T20:13:17.000Z"
+              rosterName: "Odyssey"
+              idRoster: "YFO"
+              difference: "1.010s"
+              duration: "01:27.985"
+    object_time:
+      type: object
+      properties:
+        idPlayer:
+          type: string
+        name:
+          type: string
+        date:
+          type: string
+        rosterName:
+          type: string
+        difference:
+          type: string
+        duration:
+          type: string
+    getProjectMap:
+      type: object
+      properties:
+        projectMapValid:
+          type: array
+          items:
+            $ref: '#/components/schemas/projectMap_object'
+        projectMapNotValid:
+          type: array
+          items:
+            $ref: '#/components/schemas/projectMap_object'
+      example:
+        projectMapValid:
+          - idMap: "bMG"
+            nameMap: "Gorge Champignon"
+            initialGame: "WII"
+            score: 10.2
+            iteration: 15
+          - idMap: "rMC"
+            nameMap: "Circuit Mario"
+            initialGame: "GBA"
+            score: 8.2
+            iteration: 17
+          - idMap: "rWS"
+            nameMap: "Stade Wario"
+            initialGame: "DS"
+            score: 2.45
+            iteration: 23
+          - idMap: "bBL"
+            nameMap: "Lac Boo"
+            initialGame: "GBA"
+            score: -10.2
+            iteration: 10
+        projectMapNotValid:
+          - idMap: "bPG"
+            nameMap: "Jardin Peach"
+            initialGame: "DS"
+            score: 12.2
+            iteration: 8
+          - idMap: "rMP"
+            nameMap: "Piste Musicale"
+            initialGame: "3DS"
+            score: 10.7
+            iteration: 7
+          - idMap: "rTTC"
+            nameMap: "Horloge Tic-Tac"
+            initialGame: "DS"
+            score: 10.2
+            iteration: 5
+    projectMap_object:
+      type: object
+      properties:
+        idMap:
+          type: string
+        nameMap:
+          type: string
+        initialGame:
+          type: string
+        score:
+          type: integer
+        iteration:
+          type: integer
+    postProjectMap:
+      type: object
+      properties:
+        idRoster:
+          type: string
+        scoreMatch:
+          type: integer
+        scoresMaps:
+          type: array
+          items:
+            $ref: '#/components/schemas/itemsScoreMap'
+      example:
+        idRoster: "YFG"
+        scoreMatch: 14
+        scoresMaps:
+          - idMap: "bMG"
+            scoreMap: 10
+          - idMap: "rMC"
+            scoreMap: -10
+          - idMap: "rMP"
+            scoreMap: 14
+    itemsScoreMap:
+      type: object
+      properties:
+        idMap:
+          type: string
+        scoreMap:
+          type: integer
+    map_object:
+      type: object
+      properties:
+        idMap: 
+          type: string
+        nameMap:
+          type: string
+        minia:
+          type: string
+        bag:
+          type: string
+        initialGame:
+          type: string
+        DLC:
+          type: string
+        retro:
+          type: string
+    listOfMap:
+      type: array
+      items: 
+        $ref: '#/components/schemas/map_object'
+      example:
+        - idMap: bMG
+          nameMap: Gorge Champignon
+          minia: url de la map
+          bag: url du bag
+          initialGame: WII
+          DLC: 1
+          retro: 1
+        - idMap: BDD
+          nameMap: Désert Toussec
+          minia: url de la map
+          bag: url du bag
+          initialGame: MK8
+          DLC: 0
+          retro: 0
+        - idMap: dBB
+          nameMap: Big Blue
+          minia: url de la map
+          bag: url du bag
+          initialGame: MK8
+          DLC: 1
+          retro: 0
+                
+      
+        
