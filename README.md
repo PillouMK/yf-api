@@ -44,4 +44,5 @@ The API contains 5 resources: Player, Map, Timetrial, Roster, ProjetMap:
 - **Timetrial** : Time trial data for various players
 - **Roster** : The team has two distinct rosters, **Galaxy** and **Odyssey**, there is also a third roster called **No Roster** to differentiate players in the team from others
 - **ProjectMap** : Statistics (average score by map) of the two rosters on the different races of the game  
+  
 For more details, see the documentation.
