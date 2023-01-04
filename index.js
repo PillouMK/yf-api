@@ -19,7 +19,7 @@ app.use((req, res, next) => {
 
    
         // API keys 
-        if(req.headers["api-key"] === process.env.api_key) {
+        if(req.method == "GET" || req.headers["api-key"] === process.env.api_key) {
             next();
         } else {
             res.status(STATUS_CODE_UNAUTHORISED).json({error: 'unauthorised'})
