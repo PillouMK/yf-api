@@ -224,7 +224,7 @@ const makeUpdateRequest = (idPlayer, points, top1, top3) => {
 const getAllTopByMap = (idMap) => {
     return `SELECT player.idPlayer FROM timetrial 
     JOIN player ON player.idPlayer = timetrial.idPlayer 
-    WHERE player.idRoster = 'YFG' AND timetrial.idMap = '${idMap}' OR player.idRoster = 'YFO' AND timetrial.idMap = '${idMap}'
+    WHERE timetrial.idMap = '${idMap}' AND timetrial.isShroomless = false AND player.idRoster IN ('YFG', 'YFO')
     ORDER BY timetrial.time
     LImit 10;`
 }

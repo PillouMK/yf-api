@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { getTimetrialsByMap, postTimetrial, patchTimetrial} = require('../controller/timetrialController');
+const { getTimetrialsByMap, postTimetrial, patchTimetrial, postMapsWeekly, patchMapWeekly} = require('../controller/timetrialController');
 
 // GET /timetrial/:idMap
 router.get('/:idMap', (req, res) => {
     getTimetrialsByMap(req, res);
 });
 
-// PUT /timetrial/:idTimetrial
+// PATCH /timetrial/:idMap/:idPlayer/:isShroomless
 router.patch('/:idMap/:idPlayer/:isShroomless', (req, res) => {
     patchTimetrial(req, res);
 });

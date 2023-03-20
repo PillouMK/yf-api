@@ -81,7 +81,7 @@ function postTimetrial(req, res) {
                                     FROM timetrial tm 
                                     JOIN player p ON tm.idPlayer = p.idPlayer 
                                     JOIN roster r on p.idRoster = r.idRoster 
-                                    WHERE tm.idMap = '${params.idMap}' AND r.idRoster = 'YFG' AND tm.isShroomless = ${params.isShroomless} OR tm.idMap = '${params.idMap}' AND r.idRoster = 'YFO' AND tm.isShroomless = ${params.isShroomless}
+                                    WHERE tm.idMap = '${params.idMap}' AND tm.isShroomless = ${params.isShroomless} AND p.idRoster IN ('YFG', 'YFO')
                                     ORDER BY tm.time ASC, tm.date ASC;`;
     const SQL_REQUEST_INSERT = "INSERT INTO `timetrial`(`idMap`, `idPlayer`, `time`, `isShroomless`) " +
                          `VALUES ('${params.idMap}','${params.idPlayer}',${params.time},${params.isShroomless});`;
@@ -90,66 +90,47 @@ function postTimetrial(req, res) {
             res.status(STATUS_CODE_BAD_REQUEST).send(err);
             return;
         }
+        if(params.isShroomless) {
+            res.status(STATUS_CODE_CREATED).send(result[1]);
+            return;
+        }
         if(Array.isArray(result[0]) && result[0].length) {
-            
+ 
             const OLD_RANKING = result[0];
             const NEW_RANKING = result[2]
-
-            let isSame = true;
-            for(let i = 0; i < 10; i++) {
-                if(i < OLD_RANKING.length) {
-                    if(OLD_RANKING[i].idPlayer != NEW_RANKING[i].idPlayer) {
-                        isSame = false;
-                    }
-                }
-            }
-            if(OLD_RANKING.length != NEW_RANKING.length) isSame = false;
+            let isSame = isRequestUpdateNeeded(OLD_RANKING, NEW_RANKING)
             
             if(!isSame) {
-                if(!params.isShroomless){
-                    const SQL_REQUEST_UPDATE = makeUpdateRequest(OLD_RANKING, NEW_RANKING);
+                const SQL_REQUEST_UPDATE = makeUpdateRequest(OLD_RANKING, NEW_RANKING);
 
-                    db.query(SQL_REQUEST_UPDATE, (_err, _result) => {
-                        if(_err) {
+                db.query(SQL_REQUEST_UPDATE, (_err, _result) => {
+                    if(_err) {
+                        res.status(STATUS_CODE_BAD_REQUEST).send(err);
+                        return;
+                    }
+                    res.status(STATUS_CODE_CREATED).send(result[1]);
+                    return;
+                })    
+            } else {
+                res.status(STATUS_CODE_CREATED).send(result[1]);
+            }
+        } else {
+            const SQL_REQUEST_PLAYER = `select idRoster from player WHERE idPlayer = '${params.idPlayer}';`;
+            db.query(SQL_REQUEST_PLAYER, (_err, _result) => {
+                // if no data already exist for the idMap
+                let idRoster = _result[0].idRoster;
+                if(idRoster === 'YFG' || idRoster === 'YFO') {
+                    const SQL_REQUEST_UPDATE = `UPDATE \`player\` SET \`tt_points\`=tt_points + 10,\`tt_top1\`= tt_top1 + 1,\`tt_top3\`= tt_top3 + 0 WHERE idPlayer = '${params.idPlayer}';`;
+                    db.query(SQL_REQUEST_UPDATE, (__err, __result) => {
+                        if(__err) {
                             res.status(STATUS_CODE_BAD_REQUEST).send(err);
                             return;
                         }
                         res.status(STATUS_CODE_CREATED).send(result[1]);
                         return;
                     })
-                } else {
-                    res.status(STATUS_CODE_CREATED).send(result[1]);
-                    return;
-                }
-            } else {
-                res.status(STATUS_CODE_CREATED).send(result[1]);
-            }
-        } else {
-            
-            if(!params.isShroomless){
-                const SQL_REQUEST_PLAYER = `select idRoster from player WHERE idPlayer = '${params.idPlayer}';`;
-                db.query(SQL_REQUEST_PLAYER, (_err, _result) => {
-                    // if no data already exist for the idMap
-                    let idRoster = _result[0].idRoster;
-                    if(idRoster === 'YFG' || idRoster === 'YFO') {
-                        const SQL_REQUEST_UPDATE = `UPDATE \`player\` SET \`tt_points\`=tt_points + 10,\`tt_top1\`= tt_top1 + 1,\`tt_top3\`= tt_top3 + 0 WHERE idPlayer = '${params.idPlayer}';`;
-                        db.query(SQL_REQUEST_UPDATE, (__err, __result) => {
-                            if(__err) {
-                                res.status(STATUS_CODE_BAD_REQUEST).send(err);
-                                return;
-                            }
-                            res.status(STATUS_CODE_CREATED).send(result[1]);
-                            return;
-                        })
-                    } else {
-                        res.status(STATUS_CODE_CREATED).send(result[1]);
-                        return;  
-                    }  
-                })
-            } else {
-                res.status(STATUS_CODE_CREATED).send(result[1]);
-                return;
-            }
+                }  
+            })
         }
     })
 }
@@ -160,10 +141,11 @@ function patchTimetrial(req, res) {
                                     FROM timetrial tm 
                                     JOIN player p ON tm.idPlayer = p.idPlayer 
                                     JOIN roster r on p.idRoster = r.idRoster 
-                                    WHERE tm.idMap = '${req.params.idMap}' AND r.idRoster = 'YFG' AND tm.isShroomless = ${req.params.isShroomless} OR tm.idMap = '${req.params.idMap}' AND r.idRoster = 'YFO' AND tm.isShroomless = ${req.params.isShroomless}
+                                    WHERE tm.idMap = '${req.params.idMap}' AND tm.isShroomless = ${req.params.isShroomless} AND p.idRoster IN ('YFG', 'YFO')
                                     ORDER BY tm.time ASC, tm.date ASC;`;
     const SQL_REQUEST_INSERT = `UPDATE \`timetrial\` SET \`time\`=${body.time},\`date\`=CURRENT_TIMESTAMP WHERE idMap = '${req.params.idMap}' AND idPlayer = '${req.params.idPlayer}' AND isShroomless = ${req.params.isShroomless};`;
     db.query(SQL_REQUEST_TIMETRIALS + SQL_REQUEST_INSERT + SQL_REQUEST_TIMETRIALS, (err, result) => {
+       console.log(result);
         if(err) {
             res.status(STATUS_CODE_BAD_REQUEST).send(err);
             return;
@@ -180,19 +162,21 @@ function patchTimetrial(req, res) {
             });
             return;
         }
+
             const OLD_RANKING = result[0];
             const NEW_RANKING = result[2];
 
-            let isSame = true;
-            for(let i = 0; i < 10; i++) {
-                if(OLD_RANKING[i] != undefined) {
-                    if(OLD_RANKING[i].idPlayer != NEW_RANKING[i].idPlayer) {
-                        isSame = false;
-                    }
-                }
-                
+            if(OLD_RANKING.find(x => x.idPlayer === req.params.idPlayer) == undefined) {
+                res.status(STATUS_CODE_OK).send({
+                    newTime : msToTime(body.time),
+                    oldTime: "",
+                    diff: ""
+                });
+                return
             }
-            if(OLD_RANKING.length != NEW_RANKING.length) isSame = false;
+
+            let isSame = isRequestUpdateNeeded(OLD_RANKING, NEW_RANKING);
+
 
             let oldTime = OLD_RANKING.find(x => x.idPlayer === req.params.idPlayer).time;
             let newTime = NEW_RANKING.find(x => x.idPlayer === req.params.idPlayer).time;
@@ -201,10 +185,18 @@ function patchTimetrial(req, res) {
             diff = (oldTime >= newTime) ? "-" + diff : diff;
             oldTime = msToTime(oldTime);
             newTime = msToTime(newTime);
-            if(!isSame) {
-                if(req.params.isShroomless) {
-                    const SQL_REQUEST_UPDATE = makeUpdateRequest(OLD_RANKING, NEW_RANKING);
 
+            if(req.params.isShroomless) {
+                res.status(STATUS_CODE_OK).send({
+                    diff : diff,
+                    newTime : newTime,
+                    oldTime: oldTime
+                });
+                return
+            }
+
+            if(!isSame) {
+                    const SQL_REQUEST_UPDATE = makeUpdateRequest(OLD_RANKING, NEW_RANKING);
                     db.query(SQL_REQUEST_UPDATE, (_err, _result) => {
                         if(_err) {
                             res.status(STATUS_CODE_BAD_REQUEST).send(err);
@@ -216,19 +208,11 @@ function patchTimetrial(req, res) {
                             oldTime: oldTime
                         });
                     })
-                }
-
-            } else {
-                res.status(STATUS_CODE_OK).send({
-                    diff : diff,
-                    newTime : newTime,
-                    oldTime: oldTime
-                });
-            }
-        
+            }  
     })
 }
 
+// METHODS FOR TIMETRIAL CONTROLLER
 const convertPlaceToPoints = (index) => {
     let place = parseInt(index);
     return (10 - place)
@@ -311,4 +295,28 @@ function msToTime(s, isDiff = false) {
     return !isDiff ? pad(mins) + ':' + pad(secs) + '.' + pad(ms, 3) : secs + '.' + pad(ms, 3);
 }
 
-module.exports = {getTimetrialsByMap, postTimetrial, patchTimetrial}
+const isRequestUpdateNeeded = (OLD_RANKING, NEW_RANKING) => {
+    let isSame = true;
+    if(OLD_RANKING.length != NEW_RANKING.length && NEW_RANKING.length <= 10) {
+        isSame = false;
+    } 
+    else {
+        for(let i = 0; i < 10; i++) {
+            if(i < OLD_RANKING.length) {
+                if(OLD_RANKING[i].idPlayer != NEW_RANKING[i].idPlayer) {
+                    isSame = false;
+                }
+            }
+        }
+    }
+    return isSame
+}
+
+module.exports = {
+    getTimetrialsByMap, 
+    postTimetrial, 
+    patchTimetrial,
+
+    // FOR WEEKLY
+    msToTime
+}
