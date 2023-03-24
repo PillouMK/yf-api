@@ -34,12 +34,22 @@ function postWeeklytt(req, res) {
     const SQL_SELECT_TIMETRIAL_PLAYER = `SELECT * FROM \`timetrial\` WHERE idPlayer = '${body.idPlayer}' AND isShroomless = ${body.isShroomless} AND idMap = '${body.idMap}'`;
     db.query(SQL_INSERT_WEEKLYTT + SQL_SELECT_TIMETRIAL_PLAYER, (err, result) => {
         if(err) {
-            res.status(STATUS_CODE_CONFLICT).send({
-                error: "Weeklytt already exist for this ressource"
-            })
-            return
+            if(err.errno == 1452) {
+                res.status(STATUS_CODE_BAD_REQUEST).send({
+                    error: `${body.idMap} en ${body.isShroomless ? "no items" : "items"} n'est pas une map weekly`
+                })
+                return
+            }
+            if(err.errno == 1062) {
+                res.status(STATUS_CODE_CONFLICT).send({
+                    error: "Weeklytt already exist for this ressource"
+                })
+                return
+            }
+            
         }
-        let tt_time_ms = result[1][0].time;
+        console.log(result[1], result[1].length)
+        let tt_time_ms = (result[1].length) ? result[1][0].time : undefined;
         let tt_time = tt_time_ms != undefined ? msToTime(tt_time_ms) : ""
         
         res.status(STATUS_CODE_CREATED).send({
@@ -80,6 +90,20 @@ function patchWeeklytt(req, res) {
             newIsBetter : (tt_time_ms != undefined) ? (tt_time_ms > body.time) : false
         });
     })
+}
+
+function getWeeklyttByMap(req, res) {
+    const SQL_SELECT_WEEKLY_MAP = "SELECT idMap, isShroomless FROM `weekly_map`;";
+    db.query(SQL_SELECT_WEEKLY_MAP, (err, result) => {
+        if(err) {
+            res.status(STATUS_CODE_BAD_REQUEST).send(err)
+            return;
+        }
+        const SQL_SELECT_WEEKLYTT_FROM_ID = (idMap, isShroomless) => {
+            return ``;
+        }
+    })
+
 }
 
 

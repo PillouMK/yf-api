@@ -296,16 +296,11 @@ function msToTime(s, isDiff = false) {
 }
 
 const isRequestUpdateNeeded = (OLD_RANKING, NEW_RANKING) => {
-    let isSame = true;
-    if(OLD_RANKING.length != NEW_RANKING.length && NEW_RANKING.length <= 10) {
-        isSame = false;
-    } 
-    else {
-        for(let i = 0; i < 10; i++) {
-            if(i < OLD_RANKING.length) {
-                if(OLD_RANKING[i].idPlayer != NEW_RANKING[i].idPlayer) {
-                    isSame = false;
-                }
+    let isSame = false;
+    for(let i = 0; i < 10; i++) {
+        if(i < OLD_RANKING.length) {
+            if(OLD_RANKING[i].idPlayer != NEW_RANKING[i].idPlayer) {
+                isSame = true;
             }
         }
     }
