@@ -1,6 +1,6 @@
 const config = require('../databaseConfig.js');
 const {STATUS_CODE_OK, STATUS_CODE_CREATED, STATUS_CODE_BAD_REQUEST, STATUS_CODE_NOT_FOUND, STATUS_CODE_CONFLICT} = require('./variable');
-const { msToTime } = require("./timetrialController");
+const { msToTime } = require("./functions.js");
 // Connexion à la database
 const db = config.connection;
 
@@ -34,21 +34,47 @@ function postWeeklytt(req, res) {
     const SQL_SELECT_TIMETRIAL_PLAYER = `SELECT * FROM \`timetrial\` WHERE idPlayer = '${body.idPlayer}' AND isShroomless = ${body.isShroomless} AND idMap = '${body.idMap}'`;
     db.query(SQL_INSERT_WEEKLYTT + SQL_SELECT_TIMETRIAL_PLAYER, (err, result) => {
         if(err) {
-            res.status(STATUS_CODE_CONFLICT).send({
-                error: "Weeklytt already exist for this ressource"
-            })
-            return
+            if(err.errno == 1452) {
+                res.status(STATUS_CODE_BAD_REQUEST).send({
+                    error: `${body.idMap} en ${body.isShroomless ? "no items" : "items"} n'est pas une map weekly`
+                })
+                return
+            }
+            if(err.errno == 1062) {
+                res.status(STATUS_CODE_CONFLICT).send({
+                    error: "Weeklytt already exist for this ressource"
+                })
+                return
+            }
+            
         }
-        let tt_time_ms = result[1][0].time;
+        let tt_time_ms = (result[1].length) ? result[1][0].time : undefined;
         let tt_time = tt_time_ms != undefined ? msToTime(tt_time_ms) : ""
+        if((tt_time_ms != undefined && tt_time_ms > body.time) || tt_time_ms == undefined) {
+            const SQL_UPDATE_TIMETRIAL = (tt_time_ms == undefined) ? "INSERT INTO `timetrial`(`idMap`, `idPlayer`, `time`, `isShroomless`) " +
+            `VALUES ('${body.idMap}','${body.idPlayer}',${body.time},${body.isShroomless});` : `UPDATE \`timetrial\` SET \`time\`='${body.time}' ,\`date\`=CURRENT_TIMESTAMP WHERE idMap = '${body.idMap}' AND idPlayer = '${body.idPlayer}' AND isShroomless = ${body.isShroomless};`;
+            db.query(SQL_UPDATE_TIMETRIAL, (errUpdate, resultUpdate) => {
+                if(errUpdate) {
+                    res.status(STATUS_CODE_BAD_REQUEST).send(errUpdate);
+                    return;
+                }
+                res.status(STATUS_CODE_CREATED).send({
+                    weekly: msToTime(body.time),
+                    timetrial: tt_time,
+                    ttExist: (tt_time_ms != undefined),
+                    newIsBetter : (tt_time_ms != undefined) ? (tt_time_ms > body.time) : false
+                })
+            })
+        } else {
+            // if new time isn't better than normal timetrial
+            res.status(STATUS_CODE_CREATED).send({
+                weekly: msToTime(body.time),
+                timetrial: tt_time,
+                ttExist: (tt_time_ms != undefined),
+                newIsBetter : (tt_time_ms != undefined) ? (tt_time_ms > body.time) : false
+            })
+        }
         
-        res.status(STATUS_CODE_CREATED).send({
-            weekly: msToTime(body.time),
-            timetrial: tt_time,
-            ttExist: (tt_time_ms != undefined),
-            newIsBetter : (tt_time_ms != undefined) ? (tt_time_ms > body.time) : false
-        })
-        return
     })
 }
 
@@ -65,25 +91,146 @@ function patchWeeklytt(req, res) {
             res.status(STATUS_CODE_BAD_REQUEST).send(err)
             return
         }
+        if(!result[0].length) {
+            res.status(STATUS_CODE_NOT_FOUND).send({
+                error: "Ce joueur ne possède pas de temps weekly_tt pour cette map"
+            })
+            return;
+        }
+        
         let oldTime = result[0][0].time;
         let diff = msToTime(oldTime-body.time, true);
         diff = (oldTime >= body.time) ? "-" + diff : diff;
 
         let tt_time_ms = result[2][0].time;
         let tt_time = tt_time_ms != undefined ? msToTime(tt_time_ms) : ""
-        res.status(STATUS_CODE_OK).send({
-            diff : diff,
-            newWeekly : msToTime(body.time),
-            oldWeekly: msToTime(oldTime),
-            timetrial: tt_time,
-            ttExist: (tt_time_ms != undefined),
-            newIsBetter : (tt_time_ms != undefined) ? (tt_time_ms > body.time) : false
-        });
+
+        if(tt_time_ms > body.time) {
+            const SQL_UPDATE_TIMETRIAL = `UPDATE \`timetrial\` SET \`time\`='${body.time}' ,\`date\`=CURRENT_TIMESTAMP WHERE idMap = '${idMap}' AND idPlayer = '${idPlayer}' AND isShroomless = ${isShroomless};`;
+            db.query(SQL_UPDATE_TIMETRIAL, (errUpdate, resultUpdate) => {
+                if(errUpdate) {
+                    res.status(STATUS_CODE_BAD_REQUEST).send(errUpdate);
+                    return;
+                }
+                res.status(STATUS_CODE_OK).send({
+                    diff : diff,
+                    newWeekly : msToTime(body.time),
+                    oldWeekly: msToTime(oldTime),
+                    timetrial: tt_time,
+                    ttExist: true,
+                    newIsBetter : (tt_time_ms != undefined) ? (tt_time_ms > body.time) : false
+                });
+            })
+        } else {
+            res.status(STATUS_CODE_OK).send({
+                diff : diff,
+                newWeekly : msToTime(body.time),
+                oldWeekly: msToTime(oldTime),
+                timetrial: tt_time,
+                ttExist: true,
+                newIsBetter : false
+            });
+        }
+
+        
     })
+}
+
+function getWeeklyttByMap(req, res) {
+    const SQL_SELECT_WEEKLY_MAP = "SELECT idMap, isShroomless FROM `weekly_map`;";
+    db.query(SQL_SELECT_WEEKLY_MAP, (err, result) => {
+        if(err) {
+            res.status(STATUS_CODE_BAD_REQUEST).send(err)
+            return;
+        }
+        const SQL_SELECT_WEEKLYTT_FROM_ID = (idMap, isShroomless) => {
+            return `SELECT wtt.idMap, wtt.idPlayer, p.name, wtt.time, wtt.isShroomless, wtt.date 
+            FROM weekly_tt wtt
+            JOIN player p on p.idPlayer = wtt.idPlayer 
+            WHERE wtt.idMap = '${idMap}' and wtt.isShroomless = ${isShroomless}
+            ORDER BY wtt.time ASC, wtt.date ASC;`;
+        }
+
+        const SQL_SELECT_MAP_INFOS_FROM_ID = (idMap, isShroomless) => {
+            return `SELECT m.idMap, m.nameMap, m.minia, m.initialGame, m.DLC, m.retro, wm.* 
+            FROM \`map\` m JOIN \`weekly_map\` wm ON m.idMap = wm.idMap 
+            WHERE m.idMap = '${idMap}' AND wm.isShroomless = ${isShroomless};` 
+        }
+
+        if(!result.length) {
+            res.status(STATUS_CODE_NOT_FOUND).send({
+                error : "Il n'y a pas de map weekly"
+            })
+            return;
+        }
+
+        let SQL_SELECT_WEEKLYTT = "";
+        for(let elt of result) {
+            SQL_SELECT_WEEKLYTT += SQL_SELECT_WEEKLYTT_FROM_ID(elt.idMap, elt.isShroomless);
+        }
+
+        let SQL_SELECT_INFOMAP = "";
+        for(let elt of result) {
+            SQL_SELECT_INFOMAP += SQL_SELECT_MAP_INFOS_FROM_ID(elt.idMap, elt.isShroomless);
+        }
+        db.query(SQL_SELECT_WEEKLYTT, (errWeekly, resultWeekly) => {
+            if(errWeekly) {
+                res.status(STATUS_CODE_BAD_REQUEST).send(errWeekly)
+                return;
+            }
+            if(!Array.isArray(resultWeekly) && !resultWeekly.length) {
+                res.status(STATUS_CODE_NOT_FOUND).send({             
+                        error : `Aucune données`               
+                });
+                return;
+            }
+            db.query(SQL_SELECT_INFOMAP, (errMap, resultMap) => {
+                if(errMap) {
+                    res.status(STATUS_CODE_BAD_REQUEST).send(errWeekly)
+                    return;
+                }
+                if(!Array.isArray(resultMap) && !resultMap.length) {
+                    res.status(STATUS_CODE_NOT_FOUND).send({             
+                            error : `Aucune données`               
+                    });
+                    return;
+                }
+                let arrayResponse = [];
+                for(let i = 0; i<resultMap.length; i++) {
+                    const infoMap = resultMap[i][0];
+                    let goldArray = [];
+                    let silverArray = [];
+                    let bronzeArray = [];
+                    let ironArray = [];
+                    let outArray = [];
+                    resultWeekly[i].forEach((element, index) => {
+                        let time = element.time;
+                        element.duration = msToTime(element.time);
+                        delete element.time;
+                        delete element.idMap;
+                        if(time < infoMap.goldTime) goldArray.push(element)
+                        else if(time < infoMap.silverTime) silverArray.push(element)                                
+                        else if(time < infoMap.bronzeTime) bronzeArray.push(element)                           
+                        else if(time < infoMap.ironTime) ironArray.push(element)                               
+                        else outArray.push(element)                                
+                                
+                    });
+                    const weeklyTimetrial = {goldArray: goldArray, silverArray: silverArray, bronzeArray: bronzeArray, ironArray: ironArray, outArray : outArray};
+                    arrayResponse.push({map: infoMap, weeklyTimetrial: weeklyTimetrial})
+                }
+                res.status(STATUS_CODE_OK).send({             
+                    arrayResponse               
+            });
+            })
+        })
+        
+    })
+
 }
 
 
 module.exports = {
     postWeeklytt,
-    patchWeeklytt
+    patchWeeklytt,
+    getWeeklyttByMap
 }
