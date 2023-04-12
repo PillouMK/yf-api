@@ -91,7 +91,7 @@ function patchWeeklytt(req, res) {
             res.status(STATUS_CODE_BAD_REQUEST).send(err)
             return
         }
-        if(!result[0].length) {
+        if(!result[0][0].length) {
             res.status(STATUS_CODE_NOT_FOUND).send({
                 error: "Ce joueur ne possède pas de temps weekly_tt pour cette map"
             })

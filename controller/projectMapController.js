@@ -1,5 +1,6 @@
 const config = require('../databaseConfig.js');
 const {STATUS_CODE_OK, STATUS_CODE_CREATED, STATUS_CODE_BAD_REQUEST, STATUS_CODE_NOT_FOUND} = require('./variable');
+const { calculCoef } = require('./functions.js');
 // Connexion à la database
 const db = config.connection;
 
@@ -183,13 +184,7 @@ function postProjectMap (req, res){
     
 }
 
-const calculCoef = (scoreWar) => {
-    let coef = 0;
-    let exposant = Math.log(1/2) * (scoreWar * scoreWar) * (1/10000);
-    coef = Math.exp(exposant) * 10;
-    coef = Math.round(coef*100)/100;
-    return coef;
-}
+
 
 
 module.exports={getAllprojectMap, postProjectMap};
