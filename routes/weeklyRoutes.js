@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { postWeeklytt, patchWeeklytt } = require('../controller/weeklyttController');
+const { getWeeklyttByMap, postWeeklytt, patchWeeklytt } = require('../controller/weeklyttController');
 
 
-// GET /:idMap/
-router.get('/:idMap', (req, res) => {
-    // getWeeklyttByMap(req, res);
+// GET /weekly
+router.get('/', (req, res) => {
+    getWeeklyttByMap(req, res);
 });
 
 // PATCH /weekly/:idMap/:idPlayer/:isShroomless
