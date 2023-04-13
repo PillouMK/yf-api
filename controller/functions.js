@@ -35,7 +35,8 @@ const msToTime = (s, isDiff = false) => {
 }
   
 const resetTimetrialRanking = (db) => {
-    const SQL_SELECT_MAP = "SELECT idMap from map";
+    const SQL_RESET_ALL_POINTS = "UPDATE `player` SET `tt_points`=0,`tt_top1`=0,`tt_top3`=0;";
+    const SQL_SELECT_MAP = "SELECT idMap from map;";
     db.query(SQL_SELECT_MAP, (err, result) => {
         if(err) {
             console.log(err);
@@ -62,7 +63,7 @@ const resetTimetrialRanking = (db) => {
                     SQL_UPDATE_POINT_REQUEST += makeUpdateRequest(player.idPlayer, point, top1, top3);
                 });
             });
-            db.query(SQL_UPDATE_POINT_REQUEST, (_newErr, _newResult) => {
+            db.query(SQL_RESET_ALL_POINTS + SQL_UPDATE_POINT_REQUEST, (_newErr, _newResult) => {
                 if(_newErr) {
                     console.log(_newErr)
                 }
