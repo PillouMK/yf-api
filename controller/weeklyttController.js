@@ -178,6 +178,7 @@ function getWeeklyttByMap(req, res) {
                 res.status(STATUS_CODE_BAD_REQUEST).send(errWeekly)
                 return;
             }
+            console.log("resultMap", resultWeekly);
             if(!Array.isArray(resultWeekly) && !resultWeekly.length) {
                 res.status(STATUS_CODE_NOT_FOUND).send({             
                         error : `Aucune données`               
