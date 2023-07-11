@@ -201,7 +201,6 @@ function getWeeklyttByMap(req, res) {
                     let goldArray = [];
                     let silverArray = [];
                     let bronzeArray = [];
-                    let ironArray = [];
                     let outArray = [];
                     resultWeekly[i].forEach((element, index) => {
                         let time = element.time;
@@ -210,12 +209,11 @@ function getWeeklyttByMap(req, res) {
                         delete element.idMap;
                         if(time < infoMap.goldTime) goldArray.push(element)
                         else if(time < infoMap.silverTime) silverArray.push(element)                                
-                        else if(time < infoMap.bronzeTime) bronzeArray.push(element)                           
-                        else if(time < infoMap.ironTime) ironArray.push(element)                               
+                        else if(time < infoMap.bronzeTime) bronzeArray.push(element)                                                         
                         else outArray.push(element)                                
                                 
                     });
-                    const weeklyTimetrial = {goldArray: goldArray, silverArray: silverArray, bronzeArray: bronzeArray, ironArray: ironArray, outArray : outArray};
+                    const weeklyTimetrial = {goldArray: goldArray, silverArray: silverArray, bronzeArray: bronzeArray, outArray : outArray};
                     arrayResponse.push({map: infoMap, weeklyTimetrial: weeklyTimetrial})
                 }
                 res.status(STATUS_CODE_OK).send({             
