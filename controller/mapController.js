@@ -27,9 +27,9 @@ function postMapsWeekly(req, res) {
     const SQL_DELETE_WEEKLYMAPS = "DELETE FROM `weekly_map`;";
     const SQL_DELETE_WEEKLY_TT = "DELETE FROM `weekly_tt`;"
     const SQL_INSERT_WEEKLYMAP = (weekly_map_array) => {
-        let sql = "INSERT INTO `weekly_map`(`idMap`, `isShroomless`, `goldTime`, `silverTime`, `bronzeTime`, `ironTime`, `isObligatory`) VALUES ";
+        let sql = "INSERT INTO `weekly_map`(`idMap`, `isShroomless`, `goldTime`, `silverTime`, `bronzeTime`, `isObligatory`) VALUES ";
         weekly_map_array.forEach((element, index) => {
-            sql += `('${element.idMap}',${element.isShroomless},${element.goldTime},${element.silverTime},${element.bronzeTime},${element.ironTime},${element.isObligatory})`;
+            sql += `('${element.idMap}',${element.isShroomless},${element.goldTime},${element.silverTime},${element.bronzeTime},${element.isObligatory})`;
             if(index != weekly_map_array.length-1) {
                 sql += ","
             }
@@ -52,9 +52,8 @@ function patchMapWeekly(req, res) {
     let goldTime = req.body.hasOwnProperty("goldTime") ? `\`goldTime\`=${req.body.goldTime},` : `\`goldTime\`=goldTime,`;
     let silverTime = req.body.hasOwnProperty("silverTime") ? `\`silverTime\`=${req.body.silverTime},` : `\`silverTime\`=silverTime,`;
     let bronzeTime = req.body.hasOwnProperty("bronzeTime") ? `\`bronzeTime\`=${req.body.bronzeTime},` : `\`bronzeTime\`=bronzeTime,`;
-    let ironTime = req.body.hasOwnProperty("ironTime") ? `\`ironTime\`=${req.body.ironTime}` : `\`ironTime\`=ironTime`;
-    
-    const SQL_UPDATE_WEEKLYMAP = `UPDATE \`weekly_map\` SET ${goldTime} ${silverTime} ${bronzeTime} ${ironTime} WHERE idMap = '${req.params.idMap}'`;
+
+    const SQL_UPDATE_WEEKLYMAP = `UPDATE \`weekly_map\` SET ${goldTime} ${silverTime} ${bronzeTime} WHERE idMap = '${req.params.idMap}'`;
     db.query(SQL_UPDATE_WEEKLYMAP, (err, result) => {
         if(err) {
             res.status(STATUS_CODE_BAD_REQUEST).send(err);
