@@ -202,7 +202,20 @@ function getWeeklyttByMap(req, res) {
                     let silverArray = [];
                     let bronzeArray = [];
                     let outArray = [];
-                    resultWeekly[i].forEach((element, index) => {
+                    if(Array.isArray(resultWeekly[i])) {
+                        resultWeekly[i].forEach((element, index) => {
+                            let time = element.time;
+                            element.duration = msToTime(element.time);
+                            delete element.time;
+                            delete element.idMap;
+                            if(time < infoMap.goldTime) goldArray.push(element)
+                            else if(time < infoMap.silverTime) silverArray.push(element)                                
+                            else if(time < infoMap.bronzeTime) bronzeArray.push(element)                                                         
+                            else outArray.push(element)                                
+                                    
+                        });
+                    } else {
+                        let element = resultWeekly[0];
                         let time = element.time;
                         element.duration = msToTime(element.time);
                         delete element.time;
@@ -210,9 +223,9 @@ function getWeeklyttByMap(req, res) {
                         if(time < infoMap.goldTime) goldArray.push(element)
                         else if(time < infoMap.silverTime) silverArray.push(element)                                
                         else if(time < infoMap.bronzeTime) bronzeArray.push(element)                                                         
-                        else outArray.push(element)                                
-                                
-                    });
+                        else outArray.push(element)
+                    }
+                                                        
                     const weeklyTimetrial = {goldArray: goldArray, silverArray: silverArray, bronzeArray: bronzeArray, outArray : outArray};
                     arrayResponse.push({map: infoMap, weeklyTimetrial: weeklyTimetrial})
                 }
