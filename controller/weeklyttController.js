@@ -197,7 +197,7 @@ function getWeeklyttByMap(req, res) {
                 }
                 let arrayResponse = [];
                 for(let i = 0; i<resultMap.length; i++) {
-                    const infoMap = resultMap[i][0];
+                    let infoMap = resultMap[i][0];
                     let goldArray = [];
                     let silverArray = [];
                     let bronzeArray = [];
@@ -215,6 +215,7 @@ function getWeeklyttByMap(req, res) {
                                     
                         });
                     } else {
+                        let infoMap = resultMap[0];
                         let element = resultWeekly[0];
                         let time = element.time;
                         element.duration = msToTime(element.time);
