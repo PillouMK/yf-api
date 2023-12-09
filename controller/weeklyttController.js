@@ -216,6 +216,7 @@ function getWeeklyttByMap(req, res) {
                                     
                         });
                     } else {
+                        console.log(resultMap);
                         let infoMap = resultMap[0][0];
                         let element = resultWeekly[0];
                         let time = element.time;
