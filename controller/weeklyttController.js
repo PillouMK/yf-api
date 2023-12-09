@@ -185,6 +185,7 @@ function getWeeklyttByMap(req, res) {
                 return;
             }
             db.query(SQL_SELECT_INFOMAP, (errMap, resultMap) => {
+                console.log(resultMap);
                 if(errMap) {
                     res.status(STATUS_CODE_BAD_REQUEST).send(errWeekly)
                     return;
